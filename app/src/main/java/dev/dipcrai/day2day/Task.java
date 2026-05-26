@@ -1,17 +1,44 @@
 package dev.dipcrai.day2day;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+import androidx.annotation.NonNull;
+
+@Entity(tableName = "tasks")
 public class Task {
+
+    @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = "id")
     private String id;
+
+    @ColumnInfo(name = "title")
     private String title;
+
+    @ColumnInfo(name = "description")
     private String description;
+
+    @ColumnInfo(name = "date")
     private String date;
+
+    @ColumnInfo(name = "start_time")
     private String startTime;
+
+    @ColumnInfo(name = "end_time")
     private String endTime;
+
+    @ColumnInfo(name = "color")
     private int color;
+
+    @ColumnInfo(name = "complexity")
     private int complexity;
 
     public Task() {}
 
+    @Ignore
     public Task(String id, String title, String description, String date,
                 String startTime, String endTime, int color, int complexity) {
         this.id = id;

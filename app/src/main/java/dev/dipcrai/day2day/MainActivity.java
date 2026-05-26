@@ -25,6 +25,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,11 +33,15 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import dev.dipcrai.day2day.data.local.AppDatabase;
+import dev.dipcrai.day2day.data.repository.TaskRepository;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int HOUR_HEIGHT_DP = 80;
 
-    private List<Task> mockTasks;
+    private List<Task> allTasks = new ArrayList<>();
+    private TaskRepository taskRepository;
     private String currentView = "day";
     private Calendar selectedDate = Calendar.getInstance();
     private Calendar previousMonthSelection = null;
@@ -67,8 +72,9 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        initMockTasks();
+        taskRepository = new TaskRepository(AppDatabase.getInstance(this).taskDao());
         initViews();
+        loadTasks();
         setupViewToggle();
         populateWeekDays();
         showDayView();
@@ -90,20 +96,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    private void initMockTasks() {
-        mockTasks = new ArrayList<>();
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
-        Calendar cal = Calendar.getInstance();
-        String today = sdf.format(cal.getTime());
-        String[] times = {"09:00", "09:30", "10:00", "12:00", "13:00", "14:00", "14:00", "15:00", "15:30", "16:30", "17:00", "18:00"};
-        mockTasks.add(new Task("1", "Утренняя планерка", "Обсуждение задач на день с командой", today, "09:00", "09:30", 0xFF3B82F6, 2));
-        mockTasks.add(new Task("2", "Разработка функционала", "Работа над новым интерфейсом планировщика", today, "10:00", "12:00", 0xFF8B5CF6, 8));
-        mockTasks.add(new Task("3", "Обед", "Перерыв на обед", today, "13:00", "14:00", 0xFF22C55E, 1));
-        mockTasks.add(new Task("4", "Код ревью", "Проверка pull requests от коллег", today, "14:00", "15:00", 0xFFF59E0B, 5));
-        mockTasks.add(new Task("5", "Встреча с заказчиком", "Презентация прототипа нового функционала", today, "15:30", "16:30", 0xFFEC4899, 7));
-        mockTasks.add(new Task("6", "Документация", "Обновление технической документации проекта", today, "17:00", "18:00", 0xFF06B6D4, 4));
     }
 
     private int getTaskColor(int colorHex) {
@@ -136,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
             AddTaskDialogFragment dialog = new AddTaskDialogFragment();
             dialog.setSelectedDate(dateToString(selectedDate));
             dialog.setOnTaskCreatedListener(task -> {
-                mockTasks.add(task);
+                taskRepository.insert(task, result -> {});
+                allTasks.add(task);
                 if ("day".equals(currentView)) showDayView();
                 else if ("week".equals(currentView)) showWeekView();
                 else showMonthView();
@@ -279,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
 
         String selectedDateStr = dateToString(selectedDate);
         List<Task> dayTasks = new ArrayList<>();
-        for (Task t : mockTasks) {
+        for (Task t : allTasks) {
             if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
                 dayTasks.add(t);
             }
@@ -404,6 +397,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         card.addView(layout);
+
+        card.setOnLongClickListener(v -> {
+            deleteWithConfirmation(task);
+            return true;
+        });
 
         GradientDrawable border = new GradientDrawable();
         border.setShape(GradientDrawable.RECTANGLE);
@@ -642,6 +640,12 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(descText);
 
         card.addView(layout);
+
+        card.setOnLongClickListener(v -> {
+            deleteWithConfirmation(task);
+            return true;
+        });
+
         return card;
     }
 
@@ -791,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Task> getTasksForMonthDay(Calendar date) {
         String targetDate = dateToString(date);
         List<Task> result = new ArrayList<>();
-        for (Task task : mockTasks) {
+        for (Task task : allTasks) {
             String taskDate = task.getDate();
             if (taskDate != null && taskDate.equals(targetDate)) {
                 result.add(task);
@@ -816,7 +820,7 @@ public class MainActivity extends AppCompatActivity {
 
         String selectedDateStr = dateToString(selectedDate);
         int totalComplexity = 0;
-        for (Task t : mockTasks) {
+        for (Task t : allTasks) {
             if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
                 totalComplexity += t.getComplexity();
             }
@@ -857,7 +861,7 @@ public class MainActivity extends AppCompatActivity {
         Calendar cal = getMonday(Calendar.getInstance());
         cal.add(Calendar.DAY_OF_MONTH, dayIndex);
         String targetDate = dateToString(cal);
-        for (Task task : mockTasks) {
+        for (Task task : allTasks) {
             String taskDate = task.getDate();
             if (taskDate == null) continue;
             if (taskDate.equals(targetDate)) {
@@ -874,6 +878,33 @@ public class MainActivity extends AppCompatActivity {
             sum += task.getComplexity();
         }
         return sum;
+    }
+
+    private void deleteWithConfirmation(Task task) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Удалить задачу")
+                .setMessage("Удалить \"" + task.getTitle() + "\"?")
+                .setPositiveButton("Удалить", (dialog, which) -> {
+                    taskRepository.deleteById(task.getId(), result -> {});
+                    allTasks.remove(task);
+                    if ("day".equals(currentView)) showDayView();
+                    else if ("week".equals(currentView)) showWeekView();
+                    else showMonthView();
+                    updateComplexityBadge();
+                })
+                .setNegativeButton("Отмена", null)
+                .show();
+    }
+
+    private void loadTasks() {
+        taskRepository.getAllTasks(result -> {
+            allTasks.clear();
+            if (result != null) allTasks.addAll(result);
+            if ("day".equals(currentView)) showDayView();
+            else if ("week".equals(currentView)) showWeekView();
+            else showMonthView();
+            updateComplexityBadge();
+        });
     }
 
 }
