@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
             "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
             "Июль", "Август", "Сентябрь", "Окторябрь", "Ноябрь", "Декабрь"
     };
+    private final java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,12 +94,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void initMockTasks() {
         mockTasks = new ArrayList<>();
-        mockTasks.add(new Task("1", "Утренняя планерка", "Обсуждение задач на день с командой", "09:00", "09:30", 0xFF3B82F6, 2));
-        mockTasks.add(new Task("2", "Разработка функционала", "Работа над новым интерфейсом планировщика", "10:00", "12:00", 0xFF8B5CF6, 8));
-        mockTasks.add(new Task("3", "Обед", "Перерыв на обед", "13:00", "14:00", 0xFF22C55E, 1));
-        mockTasks.add(new Task("4", "Код ревью", "Проверка pull requests от коллег", "14:00", "15:00", 0xFFF59E0B, 5));
-        mockTasks.add(new Task("5", "Встреча с заказчиком", "Презентация прототипа нового функционала", "15:30", "16:30", 0xFFEC4899, 7));
-        mockTasks.add(new Task("6", "Документация", "Обновление технической документации проекта", "17:00", "18:00", 0xFF06B6D4, 4));
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+        Calendar cal = Calendar.getInstance();
+        String today = sdf.format(cal.getTime());
+        String[] times = {"09:00", "09:30", "10:00", "12:00", "13:00", "14:00", "14:00", "15:00", "15:30", "16:30", "17:00", "18:00"};
+        mockTasks.add(new Task("1", "Утренняя планерка", "Обсуждение задач на день с командой", today, "09:00", "09:30", 0xFF3B82F6, 2));
+        mockTasks.add(new Task("2", "Разработка функционала", "Работа над новым интерфейсом планировщика", today, "10:00", "12:00", 0xFF8B5CF6, 8));
+        mockTasks.add(new Task("3", "Обед", "Перерыв на обед", today, "13:00", "14:00", 0xFF22C55E, 1));
+        mockTasks.add(new Task("4", "Код ревью", "Проверка pull requests от коллег", today, "14:00", "15:00", 0xFFF59E0B, 5));
+        mockTasks.add(new Task("5", "Встреча с заказчиком", "Презентация прототипа нового функционала", today, "15:30", "16:30", 0xFFEC4899, 7));
+        mockTasks.add(new Task("6", "Документация", "Обновление технической документации проекта", today, "17:00", "18:00", 0xFF06B6D4, 4));
     }
 
     private int getTaskColor(int colorHex) {
@@ -126,6 +131,19 @@ public class MainActivity extends AppCompatActivity {
         monthDayNames = findViewById(R.id.monthDayNames);
         monthGrid = findViewById(R.id.monthGrid);
         dayScrollView = findViewById(R.id.dayView);
+
+        findViewById(R.id.fabAddTask).setOnClickListener(v -> {
+            AddTaskDialogFragment dialog = new AddTaskDialogFragment();
+            dialog.setSelectedDate(dateToString(selectedDate));
+            dialog.setOnTaskCreatedListener(task -> {
+                mockTasks.add(task);
+                if ("day".equals(currentView)) showDayView();
+                else if ("week".equals(currentView)) showWeekView();
+                else showMonthView();
+                updateComplexityBadge();
+            });
+            dialog.show(getSupportFragmentManager(), "AddTask");
+        });
     }
 
     private void setupViewToggle() {
@@ -259,7 +277,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        for (Task task : mockTasks) {
+        String selectedDateStr = dateToString(selectedDate);
+        List<Task> dayTasks = new ArrayList<>();
+        for (Task t : mockTasks) {
+            if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
+                dayTasks.add(t);
+            }
+        }
+        for (Task task : dayTasks) {
             int startMinutes = timeToMinutes(task.getStartTime());
             int endMinutes = timeToMinutes(task.getEndTime());
             int durationMinutes = Math.max(endMinutes - startMinutes, 30);
@@ -764,11 +789,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private List<Task> getTasksForMonthDay(Calendar date) {
-        int dayOfMonth = date.get(Calendar.DAY_OF_MONTH);
+        String targetDate = dateToString(date);
         List<Task> result = new ArrayList<>();
-        for (int idx = 0; idx < mockTasks.size(); idx++) {
-            if ((dayOfMonth + idx) % 3 == 0) {
-                result.add(mockTasks.get(idx));
+        for (Task task : mockTasks) {
+            String taskDate = task.getDate();
+            if (taskDate != null && taskDate.equals(targetDate)) {
+                result.add(task);
             }
         }
         result.sort((a, b) -> {
@@ -788,8 +814,13 @@ public class MainActivity extends AppCompatActivity {
         }
         complexityBadge.setVisibility(View.VISIBLE);
 
+        String selectedDateStr = dateToString(selectedDate);
         int totalComplexity = 0;
-        for (Task t : mockTasks) totalComplexity += t.getComplexity();
+        for (Task t : mockTasks) {
+            if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
+                totalComplexity += t.getComplexity();
+            }
+        }
 
         int color;
         String label;
@@ -817,10 +848,19 @@ public class MainActivity extends AppCompatActivity {
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
 
+    private String dateToString(Calendar cal) {
+        return dateFormat.format(cal.getTime());
+    }
+
     private List<Task> getTasksForDay(int dayIndex) {
         List<Task> result = new ArrayList<>();
+        Calendar cal = getMonday(Calendar.getInstance());
+        cal.add(Calendar.DAY_OF_MONTH, dayIndex);
+        String targetDate = dateToString(cal);
         for (Task task : mockTasks) {
-            if (Integer.parseInt(task.getId()) % 7 == dayIndex) {
+            String taskDate = task.getDate();
+            if (taskDate == null) continue;
+            if (taskDate.equals(targetDate)) {
                 result.add(task);
             }
         }
