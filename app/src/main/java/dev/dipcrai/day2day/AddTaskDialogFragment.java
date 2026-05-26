@@ -4,7 +4,9 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -29,12 +31,22 @@ public class AddTaskDialogFragment extends DialogFragment {
             0xFFEF4444, 0xFFF97316, 0xFF84CC16
     };
 
+    private static final String[] RECURRENCE_LABELS = {"Один раз", "Каждый день", "Каждую неделю", "По будням", "По дням"};
+    private static final String[] RECURRENCE_VALUES = {"once", "daily", "weekly", "weekdays", "custom_days"};
+    private static final String[] DAY_LABELS = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
+    private static final int[] DAY_CHIP_IDS = {
+            R.id.chipMon, R.id.chipTue, R.id.chipWed, R.id.chipThu,
+            R.id.chipFri, R.id.chipSat, R.id.chipSun
+    };
+
     private OnTaskCreatedListener listener;
     private String selectedDate;
     private List<Task> existingTasks;
     private int selectedHour = 9;
     private int selectedMinute = 0;
     private int durationMinutes = 60;
+    private String recurrenceType = "once";
+    private boolean[] selectedDays = new boolean[7];
 
     public void setOnTaskCreatedListener(OnTaskCreatedListener listener) {
         this.listener = listener;
@@ -58,6 +70,8 @@ public class AddTaskDialogFragment extends DialogFragment {
         TextInputEditText etDescription = view.findViewById(R.id.etTaskDescription);
         Button btnStartTime = view.findViewById(R.id.btnStartTime);
         Button btnDuration = view.findViewById(R.id.btnDuration);
+        Button btnRecurrence = view.findViewById(R.id.btnRecurrence);
+        LinearLayout layoutRecurrenceDays = view.findViewById(R.id.layoutRecurrenceDays);
         Slider sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
         TextView tvTimeError = view.findViewById(R.id.tvTimeError);
@@ -92,6 +106,29 @@ public class AddTaskDialogFragment extends DialogFragment {
                     .show();
         });
 
+        btnRecurrence.setText(RECURRENCE_LABELS[0]);
+        btnRecurrence.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Повторение")
+                    .setItems(RECURRENCE_LABELS, (dialog, which) -> {
+                        recurrenceType = RECURRENCE_VALUES[which];
+                        btnRecurrence.setText(RECURRENCE_LABELS[which]);
+                        layoutRecurrenceDays.setVisibility("custom_days".equals(recurrenceType)
+                                ? android.view.View.VISIBLE : android.view.View.GONE);
+                    })
+                    .show();
+        });
+
+        for (int i = 0; i < 7; i++) {
+            final int index = i;
+            TextView chip = view.findViewById(DAY_CHIP_IDS[i]);
+            chip.setText(DAY_LABELS[i]);
+            chip.setOnClickListener(cv -> {
+                selectedDays[index] = !selectedDays[index];
+                updateChipStyle(chip, selectedDays[index]);
+            });
+        }
+
         sliderComplexity.addOnChangeListener((slider, value, fromUser) ->
                 tvComplexityValue.setText(String.valueOf((int) value)));
 
@@ -102,6 +139,14 @@ public class AddTaskDialogFragment extends DialogFragment {
             if (title.isEmpty()) {
                 etTitle.setError("Введите название");
                 return;
+            }
+            if ("custom_days".equals(recurrenceType)) {
+                boolean anySelected = false;
+                for (boolean d : selectedDays) { if (d) { anySelected = true; break; } }
+                if (!anySelected) {
+                    Toast.makeText(requireContext(), "Выберите хотя бы один день", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
             String description = etDescription.getText().toString().trim();
             int complexity = (int) sliderComplexity.getValue();
@@ -115,7 +160,7 @@ public class AddTaskDialogFragment extends DialogFragment {
             int startMinutes = selectedHour * 60 + selectedMinute;
             int endMinutes = (endHour % 24) * 60 + (endMinute % 60);
 
-            if (hasTimeOverlap(startMinutes, endMinutes, selectedDate)) {
+            if ("once".equals(recurrenceType) && hasTimeOverlap(startMinutes, endMinutes, selectedDate)) {
                 showTimeError(btnStartTime, tvTimeError);
                 return;
             }
@@ -125,6 +170,17 @@ public class AddTaskDialogFragment extends DialogFragment {
             String date = selectedDate != null ? selectedDate : new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
 
             Task task = new Task(id, title, description, date, startTime, endTime, color, complexity);
+            task.setRecurrenceType(recurrenceType);
+            if ("custom_days".equals(recurrenceType)) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 7; i++) {
+                    if (selectedDays[i]) {
+                        if (sb.length() > 0) sb.append(",");
+                        sb.append(i + 2);
+                    }
+                }
+                task.setRecurrenceDays(sb.toString());
+            }
 
             if (listener == null || listener.onTaskCreated(task)) {
                 dismiss();
@@ -133,6 +189,15 @@ public class AddTaskDialogFragment extends DialogFragment {
 
         builder.setView(view);
         return builder.create();
+    }
+
+    private void updateChipStyle(TextView chip, boolean selected) {
+        chip.setBackgroundResource(selected ? R.drawable.chip_selected : R.drawable.chip_unselected);
+        chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF717182);
+    }
+
+    private void showToast(String msg) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     private boolean hasTimeOverlap(int startMinutes, int endMinutes, String date) {

@@ -261,6 +261,8 @@ public class MainActivity extends AppCompatActivity {
         timelineContainer.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, hourHeightPx * 24));
 
+        int labelWidthPx = (int) (48 * density);
+
         for (int i = 0; i < 24; i++) {
             View hourLine = new View(this);
             FrameLayout.LayoutParams lineParams = new FrameLayout.LayoutParams(
@@ -269,6 +271,17 @@ public class MainActivity extends AppCompatActivity {
             hourLine.setLayoutParams(lineParams);
             hourLine.setBackgroundColor(ContextCompat.getColor(this, R.color.border));
             timelineContainer.addView(hourLine);
+
+            TextView hourLabel = new TextView(this);
+            hourLabel.setText(hourLabels[i]);
+            hourLabel.setTextSize(10);
+            hourLabel.setTextColor(ContextCompat.getColor(this, R.color.muted_foreground));
+            FrameLayout.LayoutParams labelParams = new FrameLayout.LayoutParams(
+                    labelWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT);
+            labelParams.topMargin = i * hourHeightPx - (int) (6 * density);
+            labelParams.leftMargin = (int) (4 * density);
+            hourLabel.setLayoutParams(labelParams);
+            timelineContainer.addView(hourLabel);
 
             if (i < 23) {
                 View halfLine = new View(this);
@@ -281,13 +294,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        String selectedDateStr = dateToString(selectedDate);
-        List<Task> dayTasks = new ArrayList<>();
-        for (Task t : allTasks) {
-            if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
-                dayTasks.add(t);
-            }
-        }
+        List<Task> dayTasks = getTasksForDate(selectedDate);
         for (Task task : dayTasks) {
             int startMinutes = timeToMinutes(task.getStartTime());
             int endMinutes = timeToMinutes(task.getEndTime());
@@ -299,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
             FrameLayout.LayoutParams taskParams = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, heightPx);
             taskParams.topMargin = topPx;
-            taskParams.leftMargin = (int) (8 * density);
+            taskParams.leftMargin = (int) (56 * density);
             taskParams.rightMargin = (int) (8 * density);
             taskCard.setLayoutParams(taskParams);
             timelineContainer.addView(taskCard);
@@ -310,9 +317,11 @@ public class MainActivity extends AppCompatActivity {
         int currentTopPx = (int) ((nowMinutes / 60f) * hourHeightPx);
 
         View timeIndicator = new View(this);
+        int timeIndentPx = (int) (52 * density);
         FrameLayout.LayoutParams timeParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 3);
         timeParams.topMargin = currentTopPx;
+        timeParams.leftMargin = timeIndentPx;
         timeIndicator.setLayoutParams(timeParams);
         timeIndicator.setBackgroundColor(ContextCompat.getColor(this, R.color.destructive));
         timelineContainer.addView(timeIndicator);
@@ -804,11 +813,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private List<Task> getTasksForMonthDay(Calendar date) {
-        String targetDate = dateToString(date);
         List<Task> result = new ArrayList<>();
         for (Task task : allTasks) {
-            String taskDate = task.getDate();
-            if (taskDate != null && taskDate.equals(targetDate)) {
+            if (isTaskOnDate(task, date)) {
                 result.add(task);
             }
         }
@@ -829,10 +836,9 @@ public class MainActivity extends AppCompatActivity {
         }
         complexityBadge.setVisibility(View.VISIBLE);
 
-        String selectedDateStr = dateToString(selectedDate);
         int totalComplexity = 0;
         for (Task t : allTasks) {
-            if (t.getDate() != null && t.getDate().equals(selectedDateStr)) {
+            if (isTaskOnDate(t, selectedDate)) {
                 totalComplexity += t.getComplexity();
             }
         }
@@ -867,15 +873,76 @@ public class MainActivity extends AppCompatActivity {
         return dateFormat.format(cal.getTime());
     }
 
+    private Calendar parseDate(String dateStr) {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(dateFormat.parse(dateStr));
+            return cal;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isTaskOnDate(Task task, Calendar date) {
+        String taskDate = task.getDate();
+        if (taskDate == null) return false;
+
+        String type = task.getRecurrenceType();
+        if (type == null) type = "once";
+
+        String dateStr = dateToString(date);
+
+        if ("once".equals(type)) {
+            return taskDate.equals(dateStr);
+        }
+
+        Calendar startDate = parseDate(taskDate);
+        if (startDate == null) return false;
+
+        if (date.before(startDate) && !dateStr.equals(taskDate)) return false;
+
+        String endDateStr = task.getRecurrenceEndDate();
+        if (endDateStr != null) {
+            Calendar endDate = parseDate(endDateStr);
+            if (endDate != null && date.after(endDate)) return false;
+        }
+
+        switch (type) {
+            case "daily":
+                return true;
+            case "weekly":
+                return date.get(Calendar.DAY_OF_WEEK) == startDate.get(Calendar.DAY_OF_WEEK);
+            case "weekdays":
+                int dow = date.get(Calendar.DAY_OF_WEEK);
+                return dow >= Calendar.MONDAY && dow <= Calendar.FRIDAY;
+            case "custom_days":
+                String daysStr = task.getRecurrenceDays();
+                if (daysStr == null || daysStr.isEmpty()) return false;
+                int targetDow = date.get(Calendar.DAY_OF_WEEK);
+                for (String d : daysStr.split(",")) {
+                    if (Integer.parseInt(d.trim()) == targetDow) return true;
+                }
+                return false;
+        }
+        return false;
+    }
+
+    private List<Task> getTasksForDate(Calendar date) {
+        List<Task> result = new ArrayList<>();
+        for (Task t : allTasks) {
+            if (isTaskOnDate(t, date)) {
+                result.add(t);
+            }
+        }
+        return result;
+    }
+
     private List<Task> getTasksForDay(int dayIndex) {
         List<Task> result = new ArrayList<>();
         Calendar cal = getMonday(Calendar.getInstance());
         cal.add(Calendar.DAY_OF_MONTH, dayIndex);
-        String targetDate = dateToString(cal);
         for (Task task : allTasks) {
-            String taskDate = task.getDate();
-            if (taskDate == null) continue;
-            if (taskDate.equals(targetDate)) {
+            if (isTaskOnDate(task, cal)) {
                 result.add(task);
             }
         }

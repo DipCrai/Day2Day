@@ -36,6 +36,15 @@ public class Task {
     @ColumnInfo(name = "complexity")
     private int complexity;
 
+    @ColumnInfo(name = "recurrence_type")
+    private String recurrenceType;
+
+    @ColumnInfo(name = "recurrence_days")
+    private String recurrenceDays;
+
+    @ColumnInfo(name = "recurrence_end_date")
+    private String recurrenceEndDate;
+
     public Task() {}
 
     @Ignore
@@ -49,6 +58,7 @@ public class Task {
         this.endTime = endTime;
         this.color = color;
         this.complexity = complexity;
+        this.recurrenceType = "once";
     }
 
     public String getId() { return id; }
@@ -74,4 +84,13 @@ public class Task {
 
     public int getComplexity() { return complexity; }
     public void setComplexity(int complexity) { this.complexity = complexity; }
+
+    public String getRecurrenceType() { return recurrenceType; }
+    public void setRecurrenceType(String recurrenceType) { this.recurrenceType = recurrenceType; }
+
+    public String getRecurrenceDays() { return recurrenceDays; }
+    public void setRecurrenceDays(String recurrenceDays) { this.recurrenceDays = recurrenceDays; }
+
+    public String getRecurrenceEndDate() { return recurrenceEndDate; }
+    public void setRecurrenceEndDate(String recurrenceEndDate) { this.recurrenceEndDate = recurrenceEndDate; }
 }
