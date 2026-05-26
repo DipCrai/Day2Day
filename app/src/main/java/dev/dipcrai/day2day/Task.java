@@ -45,6 +45,9 @@ public class Task {
     @ColumnInfo(name = "recurrence_end_date")
     private String recurrenceEndDate;
 
+    @ColumnInfo(name = "excluded_dates")
+    private String excludedDates;
+
     public Task() {}
 
     @Ignore
@@ -93,4 +96,7 @@ public class Task {
 
     public String getRecurrenceEndDate() { return recurrenceEndDate; }
     public void setRecurrenceEndDate(String recurrenceEndDate) { this.recurrenceEndDate = recurrenceEndDate; }
+
+    public String getExcludedDates() { return excludedDates; }
+    public void setExcludedDates(String excludedDates) { this.excludedDates = excludedDates; }
 }

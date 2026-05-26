@@ -50,13 +50,6 @@
                 android:text="Неделя"
                 android:textSize="13sp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/toggleMonth"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Месяц"
-                android:textSize="13sp" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
     </LinearLayout>
@@ -136,46 +129,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
-
-        </ScrollView>
-
-        <ScrollView
-            android:id="@+id/monthView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical">
-
-            <LinearLayout
-                android:id="@+id/monthContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/monthTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:layout_marginBottom="12dp"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primary" />
-
-                <LinearLayout
-                    android:id="@+id/monthDayNames"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
-
-                <GridLayout
-                    android:id="@+id/monthGrid"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:columnCount="7"
-                    android:rowCount="6"
-                    android:alignmentMode="alignBounds" />
-
-            </LinearLayout>
 
         </ScrollView>
 

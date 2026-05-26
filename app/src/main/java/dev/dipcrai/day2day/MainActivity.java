@@ -10,7 +10,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -47,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private GestureDetector gestureDetector;
     private String currentView = "day";
     private Calendar selectedDate = Calendar.getInstance();
-    private Calendar previousMonthSelection = null;
 
     private MaterialButtonToggleGroup viewToggle;
     private ViewFlipper viewFlipper;
@@ -57,16 +55,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView complexityValue;
     private LinearLayout dayScheduleContainer;
     private LinearLayout weekScheduleContainer;
-    private TextView monthTitle;
-    private LinearLayout monthDayNames;
-    private GridLayout monthGrid;
     private ScrollView dayScrollView;
 
     private final String[] dayNames = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
-    private final String[] monthNames = {
-            "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-            "Июль", "Август", "Сентябрь", "Окторябрь", "Ноябрь", "Декабрь"
-    };
     private final java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
@@ -83,11 +74,14 @@ public class MainActivity extends AppCompatActivity {
         showDayView();
         updateComplexityBadge();
 
-        gestureDetector = new GestureDetector(this, new SwipeGestureListener());
+        gestureDetector = new GestureDetector(this, new DaySwipeListener());
         dayScrollView.setOnTouchListener((v, event) -> {
             gestureDetector.onTouchEvent(event);
             return false;
         });
+
+        GestureDetector weekGestureDetector = new GestureDetector(this, new WeekSwipeListener());
+        weekDaysContainer.setOnTouchListener((v, event) -> weekGestureDetector.onTouchEvent(event));
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -98,11 +92,7 @@ public class MainActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if ("day".equals(currentView) && previousMonthSelection != null) {
-                    switchToMonth();
-                } else {
-                    finish();
-                }
+                finish();
             }
         });
     }
@@ -128,9 +118,6 @@ public class MainActivity extends AppCompatActivity {
         complexityValue = findViewById(R.id.complexityValue);
         dayScheduleContainer = findViewById(R.id.dayScheduleContainer);
         weekScheduleContainer = findViewById(R.id.weekScheduleContainer);
-        monthTitle = findViewById(R.id.monthTitle);
-        monthDayNames = findViewById(R.id.monthDayNames);
-        monthGrid = findViewById(R.id.monthGrid);
         dayScrollView = findViewById(R.id.dayView);
 
         findViewById(R.id.fabAddTask).setOnClickListener(v -> {
@@ -141,8 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 taskRepository.insert(task, result -> {});
                 allTasks.add(task);
                 if ("day".equals(currentView)) showDayView();
-                else if ("week".equals(currentView)) showWeekView();
-                else showMonthView();
+                else showWeekView();
                 updateComplexityBadge();
                 return true;
             });
@@ -154,8 +140,7 @@ public class MainActivity extends AppCompatActivity {
         viewToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
             if (checkedId == R.id.toggleDay) switchToDay();
-            else if (checkedId == R.id.toggleWeek) switchToWeek();
-            else if (checkedId == R.id.toggleMonth) switchToMonth();
+            else switchToWeek();
         });
     }
 
@@ -174,13 +159,6 @@ public class MainActivity extends AppCompatActivity {
         complexityBadge.setVisibility(View.GONE);
         populateWeekDays();
         showWeekView();
-    }
-
-    private void switchToMonth() {
-        currentView = "month";
-        viewFlipper.setDisplayedChild(2);
-        complexityBadge.setVisibility(View.GONE);
-        showMonthView();
     }
 
     private void populateWeekDays() {
@@ -669,164 +647,6 @@ public class MainActivity extends AppCompatActivity {
         return card;
     }
 
-    // --- Month View ---
-
-    private void showMonthView() {
-        int year = selectedDate.get(Calendar.YEAR);
-        int month = selectedDate.get(Calendar.MONTH);
-
-        monthTitle.setText(monthNames[month] + " " + year);
-
-        monthDayNames.removeAllViews();
-        for (String name : dayNames) {
-            TextView tv = new TextView(this);
-            tv.setText(name);
-            tv.setTextSize(12);
-            tv.setTextColor(ContextCompat.getColor(this, R.color.muted_foreground));
-            tv.setGravity(Gravity.CENTER);
-            tv.setPadding(0, 8, 0, 8);
-            monthDayNames.addView(tv, new LinearLayout.LayoutParams(
-                    0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        }
-
-        monthGrid.removeAllViews();
-
-        Calendar firstDay = Calendar.getInstance();
-        firstDay.set(year, month, 1);
-
-        int daysInMonth = firstDay.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        int firstDayOfWeek = firstDay.get(Calendar.DAY_OF_WEEK);
-        firstDayOfWeek = firstDayOfWeek == Calendar.SUNDAY ? 6 : firstDayOfWeek - 1;
-
-        Calendar prevMonth = Calendar.getInstance();
-        prevMonth.set(year, month - 1, 1);
-        int daysInPrevMonth = prevMonth.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        Calendar today = Calendar.getInstance();
-
-        float density = getResources().getDisplayMetrics().density;
-        int cellHeight = (int) (100 * density);
-
-        for (int i = firstDayOfWeek - 1; i >= 0; i--) {
-            int dayNum = daysInPrevMonth - i;
-            Calendar cellDate = Calendar.getInstance();
-            cellDate.set(year, month - 1, dayNum);
-            monthGrid.addView(createMonthCell(dayNum, false, getTasksForMonthDay(cellDate), today, cellDate, density),
-                    new GridLayout.LayoutParams(GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                            GridLayout.spec(GridLayout.UNDEFINED, 1f)));
-            monthGrid.getChildAt(monthGrid.getChildCount() - 1).getLayoutParams().height = cellHeight;
-        }
-
-        for (int i = 1; i <= daysInMonth; i++) {
-            Calendar cellDate = Calendar.getInstance();
-            cellDate.set(year, month, i);
-            monthGrid.addView(createMonthCell(i, true, getTasksForMonthDay(cellDate), today, cellDate, density),
-                    new GridLayout.LayoutParams(GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                            GridLayout.spec(GridLayout.UNDEFINED, 1f)));
-            monthGrid.getChildAt(monthGrid.getChildCount() - 1).getLayoutParams().height = cellHeight;
-        }
-
-        int totalCells = monthGrid.getChildCount();
-        int remaining = 42 - totalCells;
-        for (int i = 1; i <= remaining && i <= 42; i++) {
-            Calendar cellDate = Calendar.getInstance();
-            cellDate.set(year, month + 1, i);
-            monthGrid.addView(createMonthCell(i, false, getTasksForMonthDay(cellDate), today, cellDate, density),
-                    new GridLayout.LayoutParams(GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                            GridLayout.spec(GridLayout.UNDEFINED, 1f)));
-            monthGrid.getChildAt(monthGrid.getChildCount() - 1).getLayoutParams().height = cellHeight;
-        }
-    }
-
-    private View createMonthCell(int dayNum, boolean isCurrentMonth, List<Task> dayTasks,
-                                 Calendar today, Calendar cellDate, float density) {
-        boolean isToday = isSameDay(cellDate, today);
-
-        FrameLayout cell = new FrameLayout(this);
-        cell.setPadding((int) (4 * density), (int) (4 * density),
-                (int) (4 * density), (int) (4 * density));
-
-        GradientDrawable bg = new GradientDrawable();
-        bg.setShape(GradientDrawable.RECTANGLE);
-        bg.setCornerRadius(8 * density);
-
-        if (isToday) {
-            bg.setColor(ContextCompat.getColor(this, R.color.primary));
-        } else if (isCurrentMonth) {
-            bg.setColor(Color.WHITE);
-        } else {
-            bg.setColor(0x0A000000);
-        }
-
-        int dayComplexity = 0;
-        for (Task t : dayTasks) dayComplexity += t.getComplexity();
-        String complexityColor = getComplexityHexColor(dayComplexity);
-        if (!isToday && dayComplexity > 0) {
-            bg.setStroke((int) (2 * density), Color.parseColor(complexityColor));
-        }
-        cell.setBackground(bg);
-
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-
-        TextView dayText = new TextView(this);
-        dayText.setText(String.valueOf(dayNum));
-        dayText.setTextSize(12);
-        dayText.setTextColor(isToday ? ContextCompat.getColor(this, R.color.today_fg)
-                : isCurrentMonth ? ContextCompat.getColor(this, R.color.primary)
-                : ContextCompat.getColor(this, R.color.muted_foreground));
-        if (isToday) dayText.setTypeface(null, android.graphics.Typeface.BOLD);
-        content.addView(dayText);
-
-        if (dayTasks.size() > 0 && !isToday) {
-            int showCount = Math.min(dayTasks.size(), 3);
-            for (int i = 0; i < showCount; i++) {
-                View bar = new View(this);
-                bar.setLayoutParams(new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, (int) (4 * density)));
-                ((ViewGroup.MarginLayoutParams) bar.getLayoutParams()).setMargins(0, (int) (2 * density), 0, 0);
-                bar.setBackgroundColor(dayTasks.get(i).getColor());
-                content.addView(bar);
-            }
-        }
-
-        cell.addView(content);
-        cell.setOnClickListener(v -> {
-            if (currentView.equals("month")) {
-                selectedDate = cellDate;
-                previousMonthSelection = cellDate;
-                switchToDay();
-            }
-        });
-
-        return cell;
-    }
-
-    private String getComplexityHexColor(int complexity) {
-        if (complexity == 0) return "#D1D5DB";
-        if (complexity <= 20) return "#22C55E";
-        if (complexity <= 40) return "#3B82F6";
-        if (complexity <= 60) return "#EAB308";
-        if (complexity <= 80) return "#F97316";
-        return "#EF4444";
-    }
-
-    private List<Task> getTasksForMonthDay(Calendar date) {
-        List<Task> result = new ArrayList<>();
-        for (Task task : allTasks) {
-            if (isTaskOnDate(task, date)) {
-                result.add(task);
-            }
-        }
-        result.sort((a, b) -> {
-            int aMin = timeToMinutes(a.getStartTime());
-            int bMin = timeToMinutes(b.getStartTime());
-            return Integer.compare(aMin, bMin);
-        });
-        return result;
-    }
-
     // --- Helpers ---
 
     private void updateComplexityBadge() {
@@ -896,6 +716,13 @@ public class MainActivity extends AppCompatActivity {
             return taskDate.equals(dateStr);
         }
 
+        String excluded = task.getExcludedDates();
+        if (excluded != null && !excluded.isEmpty()) {
+            for (String d : excluded.split(",")) {
+                if (d.trim().equals(dateStr)) return false;
+            }
+        }
+
         Calendar startDate = parseDate(taskDate);
         if (startDate == null) return false;
 
@@ -957,19 +784,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteWithConfirmation(Task task) {
+        String type = task.getRecurrenceType();
+        boolean isRecurring = type != null && !"once".equals(type);
+
+        if (!isRecurring) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Удалить задачу")
+                    .setMessage("Удалить \"" + task.getTitle() + "\"?")
+                    .setPositiveButton("Удалить", (dialog, which) -> {
+                        taskRepository.deleteById(task.getId(), result -> {});
+                        allTasks.remove(task);
+                        refreshCurrentView();
+                    })
+                    .setNegativeButton("Отмена", null)
+                    .show();
+            return;
+        }
+
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Удалить задачу")
+                .setTitle("Удалить повторяющуюся задачу")
                 .setMessage("Удалить \"" + task.getTitle() + "\"?")
-                .setPositiveButton("Удалить", (dialog, which) -> {
+                .setPositiveButton("Только это", (dialog, which) -> {
+                    String today = dateToString(selectedDate);
+                    String excluded = task.getExcludedDates();
+                    if (excluded == null || excluded.isEmpty()) {
+                        task.setExcludedDates(today);
+                    } else {
+                        task.setExcludedDates(excluded + "," + today);
+                    }
+                    taskRepository.update(task, result -> {});
+                    refreshCurrentView();
+                })
+                .setNeutralButton("Все", (dialog, which) -> {
                     taskRepository.deleteById(task.getId(), result -> {});
                     allTasks.remove(task);
-                    if ("day".equals(currentView)) showDayView();
-                    else if ("week".equals(currentView)) showWeekView();
-                    else showMonthView();
-                    updateComplexityBadge();
+                    refreshCurrentView();
                 })
                 .setNegativeButton("Отмена", null)
                 .show();
+    }
+
+    private void refreshCurrentView() {
+        if ("day".equals(currentView)) showDayView();
+        else showWeekView();
+        updateComplexityBadge();
     }
 
     private void loadTasks() {
@@ -977,8 +835,7 @@ public class MainActivity extends AppCompatActivity {
             allTasks.clear();
             if (result != null) allTasks.addAll(result);
             if ("day".equals(currentView)) showDayView();
-            else if ("week".equals(currentView)) showWeekView();
-            else showMonthView();
+            else showWeekView();
             updateComplexityBadge();
         });
     }
@@ -987,7 +844,7 @@ public class MainActivity extends AppCompatActivity {
         selectedDate.add(Calendar.DAY_OF_MONTH, 1);
         populateWeekDays();
         if ("day".equals(currentView)) showDayView();
-        else if ("week".equals(currentView)) showWeekView();
+        else showWeekView();
         updateComplexityBadge();
     }
 
@@ -995,11 +852,27 @@ public class MainActivity extends AppCompatActivity {
         selectedDate.add(Calendar.DAY_OF_MONTH, -1);
         populateWeekDays();
         if ("day".equals(currentView)) showDayView();
-        else if ("week".equals(currentView)) showWeekView();
+        else showWeekView();
         updateComplexityBadge();
     }
 
-    private class SwipeGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private void goToNextWeek() {
+        selectedDate.add(Calendar.WEEK_OF_YEAR, 1);
+        populateWeekDays();
+        if ("week".equals(currentView)) showWeekView();
+        else showDayView();
+        updateComplexityBadge();
+    }
+
+    private void goToPreviousWeek() {
+        selectedDate.add(Calendar.WEEK_OF_YEAR, -1);
+        populateWeekDays();
+        if ("week".equals(currentView)) showWeekView();
+        else showDayView();
+        updateComplexityBadge();
+    }
+
+    private class DaySwipeListener extends GestureDetector.SimpleOnGestureListener {
         private static final int SWIPE_THRESHOLD = 100;
         private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
@@ -1015,11 +888,32 @@ public class MainActivity extends AppCompatActivity {
             if (Math.abs(diffX) > Math.abs(diffY)
                     && Math.abs(diffX) > SWIPE_THRESHOLD
                     && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                if (diffX > 0) {
-                    goToPreviousDay();
-                } else {
-                    goToNextDay();
-                }
+                if (diffX > 0) goToPreviousDay();
+                else goToNextDay();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private class WeekSwipeListener extends GestureDetector.SimpleOnGestureListener {
+        private static final int SWIPE_THRESHOLD = 50;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 50;
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float diffX = e2.getX() - e1.getX();
+            float diffY = e2.getY() - e1.getY();
+            if (Math.abs(diffX) > Math.abs(diffY)
+                    && Math.abs(diffX) > SWIPE_THRESHOLD
+                    && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                if (diffX > 0) goToPreviousWeek();
+                else goToNextWeek();
                 return true;
             }
             return false;

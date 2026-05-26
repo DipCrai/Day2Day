@@ -43,6 +43,13 @@ public class TaskRepository {
         });
     }
 
+    public void update(Task task, Callback<Void> callback) {
+        executor.execute(() -> {
+            taskDao.update(task);
+            mainHandler.post(() -> callback.onResult(null));
+        });
+    }
+
     public void delete(Task task, Callback<Void> callback) {
         executor.execute(() -> {
             taskDao.delete(task);
