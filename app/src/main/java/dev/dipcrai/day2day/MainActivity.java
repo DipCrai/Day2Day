@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         weekDaysContainer.removeAllViews();
 
         Calendar today = Calendar.getInstance();
-        Calendar monday = getMonday(today);
+        Calendar monday = getMonday(selectedDate);
 
         for (int i = 0; i < 7; i++) {
             Calendar day = (Calendar) monday.clone();
@@ -451,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
         weekScheduleContainer.removeAllViews();
 
         Calendar today = Calendar.getInstance();
-        Calendar monday = getMonday(today);
+        Calendar monday = getMonday(selectedDate);
 
         for (int i = 0; i < 7; i++) {
             Calendar day = (Calendar) monday.clone();
@@ -526,14 +526,14 @@ public class MainActivity extends AppCompatActivity {
 
         layout.addView(headerRow);
 
-        int dayComplexity = calculateDayComplexity(dayIndex);
+        int dayComplexity = calculateDayComplexity(day);
         if (dayComplexity > 0) {
             View complexityBadgeView = createMiniComplexityBadge(dayComplexity);
             complexityBadgeView.setPadding(0, (int) (8 * density), 0, 0);
             layout.addView(complexityBadgeView);
         }
 
-        List<Task> dayTasks = getTasksForDay(dayIndex);
+        List<Task> dayTasks = getTasksForDay(day);
         if (!dayTasks.isEmpty()) {
             layout.addView(createTasksDivider(density));
             for (Task task : dayTasks) {
@@ -937,10 +937,8 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    private List<Task> getTasksForDay(int dayIndex) {
+    private List<Task> getTasksForDay(Calendar cal) {
         List<Task> result = new ArrayList<>();
-        Calendar cal = getMonday(Calendar.getInstance());
-        cal.add(Calendar.DAY_OF_MONTH, dayIndex);
         for (Task task : allTasks) {
             if (isTaskOnDate(task, cal)) {
                 result.add(task);
@@ -950,9 +948,9 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    private int calculateDayComplexity(int dayIndex) {
+    private int calculateDayComplexity(Calendar day) {
         int sum = 0;
-        for (Task task : getTasksForDay(dayIndex)) {
+        for (Task task : getTasksForDay(day)) {
             sum += task.getComplexity();
         }
         return sum;
