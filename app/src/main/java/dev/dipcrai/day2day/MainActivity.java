@@ -81,7 +81,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         GestureDetector weekGestureDetector = new GestureDetector(this, new WeekSwipeListener());
-        weekDaysContainer.setOnTouchListener((v, event) -> weekGestureDetector.onTouchEvent(event));
+        View weekBar = (View) weekDaysContainer.getParent();
+        weekBar.setOnTouchListener((v, event) -> {
+            weekGestureDetector.onTouchEvent(event);
+            return false;
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

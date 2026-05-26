@@ -42,8 +42,10 @@ public class AddTaskDialogFragment extends DialogFragment {
     private OnTaskCreatedListener listener;
     private String selectedDate;
     private List<Task> existingTasks;
-    private int selectedHour = 9;
-    private int selectedMinute = 0;
+    private int startHour = 9;
+    private int startMinute = 0;
+    private int endHour = 10;
+    private int endMinute = 0;
     private int durationMinutes = 60;
     private String recurrenceType = "once";
     private boolean[] selectedDays = new boolean[7];
@@ -60,6 +62,20 @@ public class AddTaskDialogFragment extends DialogFragment {
         this.existingTasks = tasks;
     }
 
+    private void syncEndFromStartDuration(Button btnEndTime) {
+        int total = startHour * 60 + startMinute + durationMinutes;
+        int clamped = Math.min(total, 1439);
+        endHour = clamped / 60;
+        endMinute = clamped % 60;
+        btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
+    }
+
+    private void syncDurationFromEndStart(Button btnDuration) {
+        int diff = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+        durationMinutes = Math.max(diff, 30);
+        btnDuration.setText(formatDuration(durationMinutes));
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -69,6 +85,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         TextInputEditText etTitle = view.findViewById(R.id.etTaskTitle);
         TextInputEditText etDescription = view.findViewById(R.id.etTaskDescription);
         Button btnStartTime = view.findViewById(R.id.btnStartTime);
+        Button btnEndTime = view.findViewById(R.id.btnEndTime);
         Button btnDuration = view.findViewById(R.id.btnDuration);
         Button btnRecurrence = view.findViewById(R.id.btnRecurrence);
         LinearLayout layoutRecurrenceDays = view.findViewById(R.id.layoutRecurrenceDays);
@@ -78,25 +95,33 @@ public class AddTaskDialogFragment extends DialogFragment {
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
 
-        btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
+        btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
+        btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
+        btnDuration.setText(formatDuration(durationMinutes));
 
         btnStartTime.setOnClickListener(v -> {
             TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
                     (view1, hourOfDay, minute) -> {
-                        selectedHour = hourOfDay;
-                        selectedMinute = minute;
+                        startHour = hourOfDay;
+                        startMinute = minute;
                         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
                         clearTimeError(btnStartTime, tvTimeError);
-                        if (startPlusDurationExceedsDay(selectedHour, selectedMinute, durationMinutes)) {
-                            durationMinutes = maxDurationForTime(selectedHour, selectedMinute);
-                            btnDuration.setText(formatDuration(durationMinutes));
-                            showTimeError(btnStartTime, tvTimeError, "Слишком поздно для такой длительности");
-                        }
-                    }, selectedHour, selectedMinute, true);
+                        syncEndFromStartDuration(btnEndTime);
+                    }, startHour, startMinute, true);
             timePicker.show();
         });
 
-        btnDuration.setText(formatDuration(durationMinutes));
+        btnEndTime.setOnClickListener(v -> {
+            TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
+                    (view1, hourOfDay, minute) -> {
+                        endHour = hourOfDay;
+                        endMinute = minute;
+                        btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+                        clearTimeError(btnStartTime, tvTimeError);
+                        syncDurationFromEndStart(btnDuration);
+                    }, endHour, endMinute, true);
+            timePicker.show();
+        });
 
         btnDuration.setOnClickListener(v -> {
             String[] items = {"30 мин", "1 час", "1.5 часа", "2 часа", "3 часа", "4 часа"};
@@ -104,14 +129,10 @@ public class AddTaskDialogFragment extends DialogFragment {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("Длительность")
                     .setItems(items, (dialog, which) -> {
-                        int newDuration = values[which];
-                        if (startPlusDurationExceedsDay(selectedHour, selectedMinute, newDuration)) {
-                            Toast.makeText(requireContext(), "Задача не может заканчиваться после 23:59", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        durationMinutes = newDuration;
+                        durationMinutes = values[which];
                         btnDuration.setText(formatDuration(durationMinutes));
                         clearTimeError(btnStartTime, tvTimeError);
+                        syncEndFromStartDuration(btnEndTime);
                     })
                     .show();
         });
@@ -161,16 +182,20 @@ public class AddTaskDialogFragment extends DialogFragment {
             String description = etDescription.getText().toString().trim();
             int complexity = (int) sliderComplexity.getValue();
 
-            int startMinutes = selectedHour * 60 + selectedMinute;
-            int endMinutes = startMinutes + durationMinutes;
+            int startMinutes = startHour * 60 + startMinute;
+            int endMinutes = endHour * 60 + endMinute;
 
+            if (endMinutes <= startMinutes) {
+                showTimeError(btnStartTime, tvTimeError, "Время конца должно быть позже начала");
+                return;
+            }
             if (endMinutes > 1439) {
                 showTimeError(btnStartTime, tvTimeError, "Задача не может заканчиваться после 23:59");
                 return;
             }
 
-            String startTime = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute);
-            String endTime = String.format(Locale.getDefault(), "%02d:%02d", endMinutes / 60, endMinutes % 60);
+            String startTime = String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute);
+            String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute);
 
             if ("once".equals(recurrenceType) && hasTimeOverlap(startMinutes, endMinutes, selectedDate)) {
                 showTimeError(btnStartTime, tvTimeError, "На это время уже есть задача");
@@ -208,10 +233,6 @@ public class AddTaskDialogFragment extends DialogFragment {
         chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF717182);
     }
 
-    private void showToast(String msg) {
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
-    }
-
     private boolean hasTimeOverlap(int startMinutes, int endMinutes, String date) {
         if (existingTasks == null || date == null) return false;
         for (Task existing : existingTasks) {
@@ -226,14 +247,6 @@ public class AddTaskDialogFragment extends DialogFragment {
     private int timeToMinutes(String time) {
         String[] parts = time.split(":");
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
-    }
-
-    private boolean startPlusDurationExceedsDay(int hour, int minute, int duration) {
-        return hour * 60 + minute + duration > 1439;
-    }
-
-    private int maxDurationForTime(int hour, int minute) {
-        return Math.max(30, 1440 - (hour * 60 + minute));
     }
 
     private void showTimeError(Button btnStartTime, TextView tvTimeError, String message) {
