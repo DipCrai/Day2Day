@@ -13,17 +13,14 @@ import androidx.fragment.app.DialogFragment;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.util.Locale;
-import java.util.Random;
-
-import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 public class AddTaskDialogFragment extends DialogFragment {
 
     public interface OnTaskCreatedListener {
-        void onTaskCreated(Task task);
+        boolean onTaskCreated(Task task);
     }
 
     private static final int[] COLORS = {
@@ -34,6 +31,7 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     private OnTaskCreatedListener listener;
     private String selectedDate;
+    private List<Task> existingTasks;
     private int selectedHour = 9;
     private int selectedMinute = 0;
     private int durationMinutes = 60;
@@ -44,6 +42,10 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     public void setSelectedDate(String date) {
         this.selectedDate = date;
+    }
+
+    public void setExistingTasks(List<Task> tasks) {
+        this.existingTasks = tasks;
     }
 
     @NonNull
@@ -58,6 +60,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         Button btnDuration = view.findViewById(R.id.btnDuration);
         Slider sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
+        TextView tvTimeError = view.findViewById(R.id.tvTimeError);
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
 
@@ -69,6 +72,7 @@ public class AddTaskDialogFragment extends DialogFragment {
                         selectedHour = hourOfDay;
                         selectedMinute = minute;
                         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+                        clearTimeError(btnStartTime, tvTimeError);
                     }, selectedHour, selectedMinute, true);
             timePicker.show();
         });
@@ -83,6 +87,7 @@ public class AddTaskDialogFragment extends DialogFragment {
                     .setItems(items, (dialog, which) -> {
                         durationMinutes = values[which];
                         btnDuration.setText(formatDuration(durationMinutes));
+                        clearTimeError(btnStartTime, tvTimeError);
                     })
                     .show();
         });
@@ -107,20 +112,53 @@ public class AddTaskDialogFragment extends DialogFragment {
             String startTime = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute);
             String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour % 24, endMinute % 60);
 
+            int startMinutes = selectedHour * 60 + selectedMinute;
+            int endMinutes = (endHour % 24) * 60 + (endMinute % 60);
+
+            if (hasTimeOverlap(startMinutes, endMinutes, selectedDate)) {
+                showTimeError(btnStartTime, tvTimeError);
+                return;
+            }
+
             int color = COLORS[new Random().nextInt(COLORS.length)];
             String id = String.valueOf(System.currentTimeMillis());
             String date = selectedDate != null ? selectedDate : new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
 
             Task task = new Task(id, title, description, date, startTime, endTime, color, complexity);
 
-            if (listener != null) {
-                listener.onTaskCreated(task);
+            if (listener == null || listener.onTaskCreated(task)) {
+                dismiss();
             }
-            dismiss();
         });
 
         builder.setView(view);
         return builder.create();
+    }
+
+    private boolean hasTimeOverlap(int startMinutes, int endMinutes, String date) {
+        if (existingTasks == null || date == null) return false;
+        for (Task existing : existingTasks) {
+            if (!date.equals(existing.getDate())) continue;
+            int exStart = timeToMinutes(existing.getStartTime());
+            int exEnd = timeToMinutes(existing.getEndTime());
+            if (startMinutes < exEnd && exStart < endMinutes) return true;
+        }
+        return false;
+    }
+
+    private int timeToMinutes(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    private void showTimeError(Button btnStartTime, TextView tvTimeError) {
+        tvTimeError.setVisibility(android.view.View.VISIBLE);
+        btnStartTime.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFEF4444));
+    }
+
+    private void clearTimeError(Button btnStartTime, TextView tvTimeError) {
+        tvTimeError.setVisibility(android.view.View.GONE);
+        btnStartTime.setBackgroundTintList(null);
     }
 
     private String formatDuration(int minutes) {

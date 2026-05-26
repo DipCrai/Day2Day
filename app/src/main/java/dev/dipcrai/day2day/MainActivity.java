@@ -4,7 +4,9 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Task> allTasks = new ArrayList<>();
     private TaskRepository taskRepository;
+    private GestureDetector gestureDetector;
     private String currentView = "day";
     private Calendar selectedDate = Calendar.getInstance();
     private Calendar previousMonthSelection = null;
@@ -79,6 +82,12 @@ public class MainActivity extends AppCompatActivity {
         populateWeekDays();
         showDayView();
         updateComplexityBadge();
+
+        gestureDetector = new GestureDetector(this, new SwipeGestureListener());
+        dayScrollView.setOnTouchListener((v, event) -> {
+            gestureDetector.onTouchEvent(event);
+            return false;
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -127,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.fabAddTask).setOnClickListener(v -> {
             AddTaskDialogFragment dialog = new AddTaskDialogFragment();
             dialog.setSelectedDate(dateToString(selectedDate));
+            dialog.setExistingTasks(allTasks);
             dialog.setOnTaskCreatedListener(task -> {
                 taskRepository.insert(task, result -> {});
                 allTasks.add(task);
@@ -134,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                 else if ("week".equals(currentView)) showWeekView();
                 else showMonthView();
                 updateComplexityBadge();
+                return true;
             });
             dialog.show(getSupportFragmentManager(), "AddTask");
         });
@@ -905,6 +916,49 @@ public class MainActivity extends AppCompatActivity {
             else showMonthView();
             updateComplexityBadge();
         });
+    }
+
+    private void goToNextDay() {
+        selectedDate.add(Calendar.DAY_OF_MONTH, 1);
+        populateWeekDays();
+        if ("day".equals(currentView)) showDayView();
+        else if ("week".equals(currentView)) showWeekView();
+        updateComplexityBadge();
+    }
+
+    private void goToPreviousDay() {
+        selectedDate.add(Calendar.DAY_OF_MONTH, -1);
+        populateWeekDays();
+        if ("day".equals(currentView)) showDayView();
+        else if ("week".equals(currentView)) showWeekView();
+        updateComplexityBadge();
+    }
+
+    private class SwipeGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float diffX = e2.getX() - e1.getX();
+            float diffY = e2.getY() - e1.getY();
+            if (Math.abs(diffX) > Math.abs(diffY)
+                    && Math.abs(diffX) > SWIPE_THRESHOLD
+                    && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                if (diffX > 0) {
+                    goToPreviousDay();
+                } else {
+                    goToNextDay();
+                }
+                return true;
+            }
+            return false;
+        }
     }
 
 }
