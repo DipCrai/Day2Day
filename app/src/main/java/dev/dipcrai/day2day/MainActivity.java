@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout dayScheduleContainer;
     private LinearLayout weekScheduleContainer;
     private ScrollView dayScrollView;
+    private ScrollView weekScrollView;
 
     private final String[] dayNames = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
     private final java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -81,8 +82,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         GestureDetector weekGestureDetector = new GestureDetector(this, new WeekSwipeListener());
-        View weekBar = (View) weekDaysContainer.getParent();
-        weekBar.setOnTouchListener((v, event) -> {
+        weekScrollView.setOnTouchListener((v, event) -> {
             weekGestureDetector.onTouchEvent(event);
             return false;
         });
@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         dayScheduleContainer = findViewById(R.id.dayScheduleContainer);
         weekScheduleContainer = findViewById(R.id.weekScheduleContainer);
         dayScrollView = findViewById(R.id.dayView);
+        weekScrollView = findViewById(R.id.weekView);
 
         findViewById(R.id.fabAddTask).setOnClickListener(v -> {
             AddTaskDialogFragment dialog = new AddTaskDialogFragment();
@@ -901,8 +902,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class WeekSwipeListener extends GestureDetector.SimpleOnGestureListener {
-        private static final int SWIPE_THRESHOLD = 50;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 50;
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -911,13 +912,14 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if (e1 == null || e2 == null) return false;
             float diffX = e2.getX() - e1.getX();
             float diffY = e2.getY() - e1.getY();
             if (Math.abs(diffX) > Math.abs(diffY)
                     && Math.abs(diffX) > SWIPE_THRESHOLD
                     && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                if (diffX > 0) goToPreviousWeek();
-                else goToNextWeek();
+                if (diffX > 0) weekScrollView.post(() -> goToPreviousWeek());
+                else weekScrollView.post(() -> goToNextWeek());
                 return true;
             }
             return false;
