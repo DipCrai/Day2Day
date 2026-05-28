@@ -2,4 +2,33 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="background">#FFFFFF</color>
+    <color name="primary">#030213</color>
+    <color name="primary_foreground">#FFFFFF</color>
+    <color name="muted">#ECECF0</color>
+    <color name="muted_foreground">#717182</color>
+    <color name="accent">#E9EBEF</color>
+    <color name="accent_foreground">#030213</color>
+    <color name="destructive">#D4183D</color>
+    <color name="border">#1A000000</color>
+    <color name="card">#FFFFFF</color>
+    <color name="card_foreground">#030213</color>
+
+    <color name="task_blue">#FF3B82F6</color>
+    <color name="task_purple">#FF8B5CF6</color>
+    <color name="task_green">#FF22C55E</color>
+    <color name="task_amber">#FFF59E0B</color>
+    <color name="task_pink">#FFEC4899</color>
+    <color name="task_cyan">#FF06B6D4</color>
+
+    <color name="complexity_easy">#FF22C55E</color>
+    <color name="complexity_moderate">#FF3B82F6</color>
+    <color name="complexity_busy">#FFEAB308</color>
+    <color name="complexity_hard">#FFF97316</color>
+    <color name="complexity_extreme">#FFEF4444</color>
+
+    <color name="today_bg">#FF030213</color>
+    <color name="today_fg">#FFFFFFFF</color>
+    <color name="selected_bg">#FFE9EBEF</color>
+    <color name="free_slot">#FFF3F3F5</color>
 </resources>
