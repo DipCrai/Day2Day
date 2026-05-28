@@ -40,6 +40,14 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
     implementation(libs.material)
+
+    // Room
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+
+    // Gson
+    implementation(libs.gson)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
