@@ -60,6 +60,8 @@
     <string name="error_select_day">Выберите хотя бы один день</string>
     <string name="error_end_before_start">Время конца должно быть позже начала</string>
     <string name="error_past_midnight">Задача не может заканчиваться после 23:59</string>
+    <string name="error_time_format">Неверный формат времени (используй ЧЧ:ММ или ЧЧ)</string>
+    <string name="error_duration_format">Длительность — число минут (больше 0)</string>
     <string name="error_time_overlap">На это время уже есть задача</string>
 
     <!-- Recurrence labels -->
@@ -71,6 +73,7 @@
 
     <!-- Dialog titles -->
     <string name="dialog_duration_title">Длительность</string>
+    <string name="duration_input_hint">Введите количество минут</string>
     <string name="dialog_recurrence_title">Повторение</string>
 
     <!-- Duration items -->
@@ -90,11 +93,16 @@
     <string name="sleep_section">Сон</string>
     <string name="theme_section">Тема</string>
     <string name="theme_coming_soon">Скоро будет доступно</string>
+    <string name="theme_label">Оформление</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_light">Светлая</string>
 
     <string name="sleep_title">Время сна</string>
     <string name="sleep_start">Начало сна</string>
     <string name="sleep_end">Конец сна</string>
 
+    <string name="sleep_error_format">Неверный формат времени (используй ЧЧ:ММ)</string>
     <string name="sleep_error_equal">Время начала и конца не может совпадать</string>
     <string name="sleep_error_short">Слишком короткий сон (меньше 1 часа)</string>
     <string name="sleep_error_long">Слишком длинный сон (больше 12 часов)</string>

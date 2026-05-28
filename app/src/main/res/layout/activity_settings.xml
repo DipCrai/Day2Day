@@ -62,9 +62,9 @@
                 android:textColor="@color/muted_foreground"
                 android:layout_marginBottom="8dp" />
 
-            <TextView
+            <EditText
                 android:id="@+id/sleepStart"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="40dp"
                 android:text="00:00"
                 android:textSize="14sp"
@@ -72,8 +72,7 @@
                 android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
+                android:inputType="time"
                 android:layout_marginBottom="16dp" />
 
             <TextView
@@ -84,9 +83,9 @@
                 android:textColor="@color/muted_foreground"
                 android:layout_marginBottom="8dp" />
 
-            <TextView
+            <EditText
                 android:id="@+id/sleepEnd"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="40dp"
                 android:text="08:00"
                 android:textSize="14sp"
@@ -94,8 +93,7 @@
                 android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
+                android:inputType="time"
                 android:layout_marginBottom="24dp" />
 
             <LinearLayout
@@ -111,7 +109,7 @@
                     android:layout_height="42dp"
                     android:text="@string/btn_save"
                     android:textSize="14sp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/primary_foreground"
                     android:background="@drawable/button_black"
                     android:gravity="center"
                     android:paddingHorizontal="24dp"
@@ -137,10 +135,60 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/theme_coming_soon"
+                android:text="@string/theme_label"
                 android:textSize="14sp"
                 android:textColor="@color/muted_foreground"
-                android:layout_marginBottom="32dp" />
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="32dp">
+
+                <TextView
+                    android:id="@+id/pillThemeSystem"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="center"
+                    android:text="@string/theme_system"
+                    android:textSize="13sp"
+                    android:background="@drawable/chip_selected"
+                    android:textColor="@color/primary_foreground"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/pillThemeDark"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:gravity="center"
+                    android:text="@string/theme_dark"
+                    android:textSize="13sp"
+                    android:background="@drawable/chip_unselected"
+                    android:textColor="@color/muted_foreground"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/pillThemeLight"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/theme_light"
+                    android:textSize="13sp"
+                    android:background="@drawable/chip_unselected"
+                    android:textColor="@color/muted_foreground"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

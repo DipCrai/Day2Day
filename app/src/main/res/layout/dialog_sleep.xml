@@ -83,7 +83,7 @@
             android:layout_height="42dp"
             android:text="@string/btn_save"
             android:textSize="14sp"
-            android:textColor="@color/white"
+            android:textColor="@color/primary_foreground"
             android:background="@drawable/button_black"
             android:gravity="center"
             android:paddingHorizontal="24dp"

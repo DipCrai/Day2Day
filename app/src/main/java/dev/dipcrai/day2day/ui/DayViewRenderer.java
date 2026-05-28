@@ -81,7 +81,7 @@ public class DayViewRenderer {
                         ViewGroup.LayoutParams.MATCH_PARENT, 1);
                 halfParams.topMargin = i * hourHeightPx + hourHeightPx / 2;
                 halfLine.setLayoutParams(halfParams);
-                halfLine.setBackgroundColor(0x1A000000);
+                halfLine.setBackgroundColor(ContextCompat.getColor(context, R.color.border));
                 timelineContainer.addView(halfLine);
             }
         }
@@ -138,7 +138,7 @@ public class DayViewRenderer {
         card.setRadius(8 * density);
         card.setContentPadding((int) (10 * density), (int) (8 * density),
                 (int) (10 * density), (int) (8 * density));
-        card.setCardBackgroundColor(Color.WHITE);
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
         card.setUseCompatPadding(true);
 
         LinearLayout layout = new LinearLayout(context);
@@ -209,7 +209,7 @@ public class DayViewRenderer {
         GradientDrawable border = new GradientDrawable();
         border.setShape(GradientDrawable.RECTANGLE);
         border.setCornerRadius(8 * density);
-        border.setStroke((int) (3 * density), task.getColor());
+        border.setStroke((int) (1.5f * density), task.getColor());
 
         LayerDrawable layerDrawable = new LayerDrawable(new android.graphics.drawable.Drawable[]{
                 createBackgroundDrawable(task.getColor()),
