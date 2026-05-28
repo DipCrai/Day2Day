@@ -1,3 +1,92 @@
 <resources>
     <string name="app_name">Day2Day</string>
+
+    <!-- Day names -->
+    <string name="day_mon">Пн</string>
+    <string name="day_tue">Вт</string>
+    <string name="day_wed">Ср</string>
+    <string name="day_thu">Чт</string>
+    <string name="day_fri">Пт</string>
+    <string name="day_sat">Сб</string>
+    <string name="day_sun">Вс</string>
+
+    <!-- View toggle -->
+    <string name="title_planner">Планировщик</string>
+    <string name="view_day">День</string>
+    <string name="view_week">Неделя</string>
+
+    <!-- FAB -->
+    <string name="add_task_description">Добавить задачу</string>
+
+    <!-- Today badge -->
+    <string name="today">Сегодня</string>
+
+    <!-- Empty state -->
+    <string name="no_tasks">Нет задач</string>
+
+    <!-- Complexity labels -->
+    <string name="complexity_easy_day">Легкий день</string>
+    <string name="complexity_moderate_day">Умеренно загруженный</string>
+    <string name="complexity_hard_day">Сильно загруженный</string>
+    <string name="complexity_label">Сложность: %d/10</string>
+
+    <!-- Time range -->
+    <string name="time_range">%1$s - %2$s</string>
+
+    <!-- Delete dialogs -->
+    <string name="delete_task_title">Удалить задачу</string>
+    <string name="delete_task_message">Удалить \"%s\"?</string>
+    <string name="delete_positive">Удалить</string>
+    <string name="delete_cancel">Отмена</string>
+    <string name="delete_recurring_title">Удалить повторяющуюся задачу</string>
+    <string name="delete_this">Только это</string>
+    <string name="delete_all">Все</string>
+
+    <!-- Add Task Dialog -->
+    <string name="dialog_title_new_task">Новая задача</string>
+    <string name="hint_title">Название</string>
+    <string name="hint_description">Описание</string>
+    <string name="label_start_time">Время начала</string>
+    <string name="label_end_time">Время конца</string>
+    <string name="label_duration">Длительность</string>
+    <string name="label_recurrence">Повторение</string>
+    <string name="label_complexity">Сложность</string>
+    <string name="btn_cancel">Отмена</string>
+    <string name="btn_add">Добавить</string>
+
+    <!-- Validation errors -->
+    <string name="error_title_required">Введите название</string>
+    <string name="error_select_day">Выберите хотя бы один день</string>
+    <string name="error_end_before_start">Время конца должно быть позже начала</string>
+    <string name="error_past_midnight">Задача не может заканчиваться после 23:59</string>
+    <string name="error_time_overlap">На это время уже есть задача</string>
+
+    <!-- Recurrence labels -->
+    <string name="recurrence_once">Один раз</string>
+    <string name="recurrence_daily">Каждый день</string>
+    <string name="recurrence_weekly">Каждую неделю</string>
+    <string name="recurrence_weekdays">По будням</string>
+    <string name="recurrence_custom_days">По дням</string>
+
+    <!-- Dialog titles -->
+    <string name="dialog_duration_title">Длительность</string>
+    <string name="dialog_recurrence_title">Повторение</string>
+
+    <!-- Duration items -->
+    <string name="duration_30min">30 мин</string>
+    <string name="duration_1h">1 час</string>
+    <string name="duration_1_5h">1.5 часа</string>
+    <string name="duration_2h">2 часа</string>
+    <string name="duration_3h">3 часа</string>
+    <string name="duration_4h">4 часа</string>
+
+    <!-- Duration format -->
+    <string name="duration_min">%1$d мин</string>
+    <string name="duration_hour">%1$d ч</string>
+    <string name="duration_hour_min">%1$d ч %2$d мин</string>
+
+    <!-- Default values -->
+    <string name="start_time_default">09:00</string>
+    <string name="end_time_default">10:00</string>
+    <string name="slider_default">5</string>
 </resources>

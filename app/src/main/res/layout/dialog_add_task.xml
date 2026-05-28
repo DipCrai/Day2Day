@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="@drawable/dialog_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,52 +13,49 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Новая задача"
+            android:text="@string/dialog_title_new_task"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/primary"
             android:layout_marginBottom="20dp" />
 
-        <com.google.android.material.textfield.TextInputLayout
+        <EditText
+            android:id="@+id/etTaskTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="Название"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:hint="@string/hint_title"
+            android:textSize="15sp"
+            android:textColor="@color/primary"
+            android:textColorHint="@color/muted_foreground"
+            android:background="@drawable/edit_text_bg"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:inputType="text" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTaskTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
+        <EditText
+            android:id="@+id/etTaskDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="Описание"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTaskDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="3" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/hint_description"
+            android:textSize="15sp"
+            android:textColor="@color/primary"
+            android:textColorHint="@color/muted_foreground"
+            android:background="@drawable/edit_text_bg"
+            android:padding="12dp"
+            android:minLines="3"
+            android:gravity="top"
+            android:layout_marginBottom="8dp"
+            android:inputType="textMultiLine" />
 
         <TextView
             android:id="@+id/tvTimeError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="На это время уже есть задача"
-            android:textColor="@android:color/holo_red_dark"
+            android:text="@string/error_time_overlap"
+            android:textColor="@color/destructive"
             android:textSize="13sp"
             android:visibility="gone"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvFreeSlot"
@@ -78,22 +75,28 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Время начала"
+                android:text="@string/label_start_time"
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnStartTime"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="09:00" />
+                android:layout_height="40dp"
+                android:text="@string/start_time_default"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/button_black"
+                android:paddingHorizontal="16dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -102,22 +105,28 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Время конца"
+                android:text="@string/label_end_time"
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnEndTime"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10:00" />
+                android:layout_height="40dp"
+                android:text="@string/end_time_default"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/button_black"
+                android:paddingHorizontal="16dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -126,22 +135,28 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Длительность"
+                android:text="@string/label_duration"
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnDuration"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1 час" />
+                android:layout_height="40dp"
+                android:text="@string/duration_1h"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/button_black"
+                android:paddingHorizontal="16dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -156,16 +171,22 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Повторение"
+                android:text="@string/label_recurrence"
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnRecurrence"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Один раз" />
+                android:layout_height="40dp"
+                android:text="@string/recurrence_once"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/button_black"
+                android:paddingHorizontal="16dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -184,7 +205,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Пн"
+                android:text="@string/day_mon"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -197,7 +218,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Вт"
+                android:text="@string/day_tue"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -210,7 +231,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Ср"
+                android:text="@string/day_wed"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -223,7 +244,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Чт"
+                android:text="@string/day_thu"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -236,7 +257,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Пт"
+                android:text="@string/day_fri"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -249,7 +270,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Сб"
+                android:text="@string/day_sat"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -262,7 +283,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Вс"
+                android:text="@string/day_sun"
                 android:textSize="13sp"
                 android:background="@drawable/chip_unselected"
                 android:clickable="true"
@@ -273,7 +294,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Сложность"
+            android:text="@string/label_complexity"
             android:textSize="14sp"
             android:textColor="@color/primary"
             android:layout_marginBottom="8dp" />
@@ -289,20 +310,20 @@
                 android:id="@+id/tvComplexityValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="5"
+                android:text="@string/slider_default"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary"
+                android:minWidth="36dp"
                 android:layout_marginEnd="16dp" />
 
-            <com.google.android.material.slider.Slider
+            <SeekBar
                 android:id="@+id/sliderComplexity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:valueFrom="1"
-                android:valueTo="10"
-                android:value="5" />
+                android:max="9"
+                android:progress="4" />
 
         </LinearLayout>
 
@@ -320,20 +341,30 @@
             android:orientation="horizontal"
             android:gravity="end">
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnCancel"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Отмена"
-                android:layout_marginEnd="12dp" />
+                android:layout_height="42dp"
+                android:text="@string/btn_cancel"
+                android:textSize="14sp"
+                android:textColor="@color/muted_foreground"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="12dp"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnSave"
-                style="@style/Widget.Material3.Button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Добавить" />
+                android:layout_height="42dp"
+                android:text="@string/btn_add"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:background="@drawable/button_black"
+                android:gravity="center"
+                android:paddingHorizontal="24dp"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 

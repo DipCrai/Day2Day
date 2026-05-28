@@ -22,39 +22,52 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Планировщик"
+            android:text="@string/title_planner"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/primary" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
+        <LinearLayout
             android:id="@+id/viewToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:checkedButton="@id/toggleDay">
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="3dp"
+            android:background="@drawable/toggle_bg">
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/toggleDay"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="День"
-                android:textSize="13sp" />
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="7dp"
+                android:text="@string/view_day"
+                android:textSize="14sp"
+                android:background="@drawable/toggle_option_active"
+                android:textColor="@color/primary"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/toggleWeek"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Неделя"
-                android:textSize="13sp" />
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="7dp"
+                android:text="@string/view_week"
+                android:textSize="14sp"
+                android:background="@drawable/toggle_option_inactive"
+                android:textColor="@color/muted_foreground"
+                android:clickable="true"
+                android:focusable="true" />
 
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+        </LinearLayout>
 
     </LinearLayout>
 
     <HorizontalScrollView
+        android:id="@+id/weekStrip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -71,30 +84,52 @@
     </HorizontalScrollView>
 
     <LinearLayout
-        android:id="@+id/complexityBadge"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp"
-        android:background="@drawable/complexity_badge_bg"
-        android:visibility="gone">
+        android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/complexityLabel"
+            android:id="@+id/monthBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
             android:textSize="12sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/primary" />
 
-        <TextView
-            android:id="@+id/complexityValue"
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/complexityBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:textSize="12sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:background="@drawable/complexity_badge_bg"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/complexityLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/complexityValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <ViewFlipper
@@ -142,7 +177,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:contentDescription="Добавить задачу"
+        android:contentDescription="@string/add_task_description"
         android:src="@android:drawable/ic_menu_add"
         app:backgroundTint="@color/primary"
         app:tint="@color/primary_foreground" />

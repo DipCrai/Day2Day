@@ -2,18 +2,18 @@ package dev.dipcrai.day2day;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-
-import com.google.android.material.slider.Slider;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.List;
 import java.util.Locale;
@@ -25,15 +25,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         boolean onTaskCreated(Task task);
     }
 
-    private static final int[] COLORS = {
-            0xFF3B82F6, 0xFF8B5CF6, 0xFF22C55E,
-            0xFFF59E0B, 0xFFEC4899, 0xFF06B6D4,
-            0xFFEF4444, 0xFFF97316, 0xFF84CC16
-    };
-
-    private static final String[] RECURRENCE_LABELS = {"Один раз", "Каждый день", "Каждую неделю", "По будням", "По дням"};
     private static final String[] RECURRENCE_VALUES = {"once", "daily", "weekly", "weekdays", "custom_days"};
-    private static final String[] DAY_LABELS = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
     private static final int[] DAY_CHIP_IDS = {
             R.id.chipMon, R.id.chipTue, R.id.chipWed, R.id.chipThu,
             R.id.chipFri, R.id.chipSat, R.id.chipSun
@@ -42,6 +34,9 @@ public class AddTaskDialogFragment extends DialogFragment {
     private OnTaskCreatedListener listener;
     private String selectedDate;
     private List<Task> existingTasks;
+    private String[] recurrenceLabels;
+    private String[] dayLabels;
+    private int[] colors;
     private int startHour = 9;
     private int startMinute = 0;
     private int endHour = 10;
@@ -62,7 +57,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         this.existingTasks = tasks;
     }
 
-    private void syncEndFromStartDuration(Button btnEndTime) {
+    private void syncEndFromStartDuration(TextView btnEndTime) {
         int total = startHour * 60 + startMinute + durationMinutes;
         int clamped = Math.min(total, 1439);
         endHour = clamped / 60;
@@ -70,7 +65,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
     }
 
-    private void syncDurationFromEndStart(Button btnDuration) {
+    private void syncDurationFromEndStart(TextView btnDuration) {
         int diff = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
         durationMinutes = Math.max(diff, 30);
         btnDuration.setText(formatDuration(durationMinutes));
@@ -82,20 +77,48 @@ public class AddTaskDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         android.view.View view = getLayoutInflater().inflate(R.layout.dialog_add_task, null);
 
-        TextInputEditText etTitle = view.findViewById(R.id.etTaskTitle);
-        TextInputEditText etDescription = view.findViewById(R.id.etTaskDescription);
-        Button btnStartTime = view.findViewById(R.id.btnStartTime);
-        Button btnEndTime = view.findViewById(R.id.btnEndTime);
-        Button btnDuration = view.findViewById(R.id.btnDuration);
-        Button btnRecurrence = view.findViewById(R.id.btnRecurrence);
+        recurrenceLabels = new String[] {
+                getString(R.string.recurrence_once), getString(R.string.recurrence_daily),
+                getString(R.string.recurrence_weekly), getString(R.string.recurrence_weekdays),
+                getString(R.string.recurrence_custom_days)
+        };
+        dayLabels = new String[] {
+                getString(R.string.day_mon), getString(R.string.day_tue),
+                getString(R.string.day_wed), getString(R.string.day_thu),
+                getString(R.string.day_fri), getString(R.string.day_sat),
+                getString(R.string.day_sun)
+        };
+        colors = new int[] {
+                ContextCompat.getColor(requireContext(), R.color.task_blue),
+                ContextCompat.getColor(requireContext(), R.color.task_purple),
+                ContextCompat.getColor(requireContext(), R.color.task_green),
+                ContextCompat.getColor(requireContext(), R.color.task_amber),
+                ContextCompat.getColor(requireContext(), R.color.task_pink),
+                ContextCompat.getColor(requireContext(), R.color.task_cyan),
+                ContextCompat.getColor(requireContext(), R.color.complexity_extreme),
+                ContextCompat.getColor(requireContext(), R.color.complexity_hard),
+                ContextCompat.getColor(requireContext(), R.color.task_lime)
+        };
+
+        EditText etTitle = view.findViewById(R.id.etTaskTitle);
+        EditText etDescription = view.findViewById(R.id.etTaskDescription);
+        TextView btnStartTime = view.findViewById(R.id.btnStartTime);
+        TextView btnEndTime = view.findViewById(R.id.btnEndTime);
+        TextView btnDuration = view.findViewById(R.id.btnDuration);
+        TextView btnRecurrence = view.findViewById(R.id.btnRecurrence);
         LinearLayout layoutRecurrenceDays = view.findViewById(R.id.layoutRecurrenceDays);
-        Slider sliderComplexity = view.findViewById(R.id.sliderComplexity);
+        SeekBar sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
         TextView tvTimeError = view.findViewById(R.id.tvTimeError);
+<<<<<<< Updated upstream
         TextView tvFreeSlot = view.findViewById(R.id.tvFreeSlot);
         Button btnFindTime = view.findViewById(R.id.btnFindTime);
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
+=======
+        TextView btnCancel = view.findViewById(R.id.btnCancel);
+        TextView btnSave = view.findViewById(R.id.btnSave);
+>>>>>>> Stashed changes
 
         findFreeTimeSlot(tvFreeSlot);
         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
@@ -127,10 +150,14 @@ public class AddTaskDialogFragment extends DialogFragment {
         });
 
         btnDuration.setOnClickListener(v -> {
-            String[] items = {"30 мин", "1 час", "1.5 часа", "2 часа", "3 часа", "4 часа"};
+            String[] items = {
+                    getString(R.string.duration_30min), getString(R.string.duration_1h),
+                    getString(R.string.duration_1_5h), getString(R.string.duration_2h),
+                    getString(R.string.duration_3h), getString(R.string.duration_4h)
+            };
             int[] values = {30, 60, 90, 120, 180, 240};
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Длительность")
+                    .setTitle(getString(R.string.dialog_duration_title))
                     .setItems(items, (dialog, which) -> {
                         durationMinutes = values[which];
                         btnDuration.setText(formatDuration(durationMinutes));
@@ -140,13 +167,13 @@ public class AddTaskDialogFragment extends DialogFragment {
                     .show();
         });
 
-        btnRecurrence.setText(RECURRENCE_LABELS[0]);
+        btnRecurrence.setText(recurrenceLabels[0]);
         btnRecurrence.setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Повторение")
-                    .setItems(RECURRENCE_LABELS, (dialog, which) -> {
+                    .setTitle(getString(R.string.dialog_recurrence_title))
+                    .setItems(recurrenceLabels, (dialog, which) -> {
                         recurrenceType = RECURRENCE_VALUES[which];
-                        btnRecurrence.setText(RECURRENCE_LABELS[which]);
+                        btnRecurrence.setText(recurrenceLabels[which]);
                         layoutRecurrenceDays.setVisibility("custom_days".equals(recurrenceType)
                                 ? android.view.View.VISIBLE : android.view.View.GONE);
                     })
@@ -156,15 +183,23 @@ public class AddTaskDialogFragment extends DialogFragment {
         for (int i = 0; i < 7; i++) {
             final int index = i;
             TextView chip = view.findViewById(DAY_CHIP_IDS[i]);
-            chip.setText(DAY_LABELS[i]);
+            chip.setText(dayLabels[i]);
             chip.setOnClickListener(cv -> {
                 selectedDays[index] = !selectedDays[index];
                 updateChipStyle(chip, selectedDays[index]);
             });
         }
 
-        sliderComplexity.addOnChangeListener((slider, value, fromUser) ->
-                tvComplexityValue.setText(String.valueOf((int) value)));
+        sliderComplexity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                tvComplexityValue.setText(String.valueOf(progress + 1));
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
         btnFindTime.setOnClickListener(v -> {
             int taskComplexity = (int) sliderComplexity.getValue();
@@ -176,41 +211,41 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnSave.setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             if (title.isEmpty()) {
-                etTitle.setError("Введите название");
+                etTitle.setError(getString(R.string.error_title_required));
                 return;
             }
             if ("custom_days".equals(recurrenceType)) {
                 boolean anySelected = false;
                 for (boolean d : selectedDays) { if (d) { anySelected = true; break; } }
                 if (!anySelected) {
-                    Toast.makeText(requireContext(), "Выберите хотя бы один день", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.error_select_day), Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
             String description = etDescription.getText().toString().trim();
-            int complexity = (int) sliderComplexity.getValue();
+            int complexity = sliderComplexity.getProgress() + 1;
 
             int startMinutes = startHour * 60 + startMinute;
             int endMinutes = endHour * 60 + endMinute;
 
             if (endMinutes <= startMinutes) {
-                showTimeError(btnStartTime, tvTimeError, "Время конца должно быть позже начала");
+                showTimeError(btnStartTime, tvTimeError, getString(R.string.error_end_before_start));
                 return;
             }
             if (endMinutes > 1439) {
-                showTimeError(btnStartTime, tvTimeError, "Задача не может заканчиваться после 23:59");
+                showTimeError(btnStartTime, tvTimeError, getString(R.string.error_past_midnight));
                 return;
             }
 
             String startTime = String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute);
             String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute);
 
-            if ("once".equals(recurrenceType) && hasTimeOverlap(startMinutes, endMinutes, selectedDate)) {
-                showTimeError(btnStartTime, tvTimeError, "На это время уже есть задача");
+            if (hasTimeOverlap(startMinutes, endMinutes)) {
+                showTimeError(btnStartTime, tvTimeError, getString(R.string.error_time_overlap));
                 return;
             }
 
-            int color = COLORS[new Random().nextInt(COLORS.length)];
+            int color = colors[new Random().nextInt(colors.length)];
             String id = String.valueOf(System.currentTimeMillis());
             String date = selectedDate != null ? selectedDate : new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
 
@@ -233,7 +268,11 @@ public class AddTaskDialogFragment extends DialogFragment {
         });
 
         builder.setView(view);
-        return builder.create();
+        Dialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+        return dialog;
     }
 
     private void findFreeTimeSlot(TextView tvFreeSlot) {
@@ -467,13 +506,14 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     private void updateChipStyle(TextView chip, boolean selected) {
         chip.setBackgroundResource(selected ? R.drawable.chip_selected : R.drawable.chip_unselected);
-        chip.setTextColor(selected ? 0xFFFFFFFF : 0xFF717182);
+        chip.setTextColor(selected ?
+                ContextCompat.getColor(chip.getContext(), R.color.white) :
+                ContextCompat.getColor(chip.getContext(), R.color.muted_foreground));
     }
 
-    private boolean hasTimeOverlap(int startMinutes, int endMinutes, String date) {
-        if (existingTasks == null || date == null) return false;
+    private boolean hasTimeOverlap(int startMinutes, int endMinutes) {
+        if (existingTasks == null) return false;
         for (Task existing : existingTasks) {
-            if (!date.equals(existing.getDate())) continue;
             int exStart = timeToMinutes(existing.getStartTime());
             int exEnd = timeToMinutes(existing.getEndTime());
             if (startMinutes < exEnd && exStart < endMinutes) return true;
@@ -486,22 +526,23 @@ public class AddTaskDialogFragment extends DialogFragment {
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
 
-    private void showTimeError(Button btnStartTime, TextView tvTimeError, String message) {
+    private void showTimeError(TextView btnStartTime, TextView tvTimeError, String message) {
         tvTimeError.setText(message);
         tvTimeError.setVisibility(android.view.View.VISIBLE);
-        btnStartTime.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFEF4444));
+        btnStartTime.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(btnStartTime.getContext(), R.color.complexity_extreme)));
     }
 
-    private void clearTimeError(Button btnStartTime, TextView tvTimeError) {
+    private void clearTimeError(TextView btnStartTime, TextView tvTimeError) {
         tvTimeError.setVisibility(android.view.View.GONE);
         btnStartTime.setBackgroundTintList(null);
     }
 
     private String formatDuration(int minutes) {
-        if (minutes < 60) return minutes + " мин";
+        if (minutes < 60) return getString(R.string.duration_min, minutes);
         int hours = minutes / 60;
         int remain = minutes % 60;
-        if (remain == 0) return hours + " ч";
-        return hours + " ч " + remain + " мин";
+        if (remain == 0) return getString(R.string.duration_hour, hours);
+        return getString(R.string.duration_hour_min, hours, remain);
     }
 }
