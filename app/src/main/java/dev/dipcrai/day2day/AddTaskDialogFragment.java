@@ -92,10 +92,11 @@ public class AddTaskDialogFragment extends DialogFragment {
         Slider sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
         TextView tvTimeError = view.findViewById(R.id.tvTimeError);
+        TextView tvFreeSlot = view.findViewById(R.id.tvFreeSlot);
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
 
-        findFreeTimeSlot();
+        findFreeTimeSlot(tvFreeSlot);
         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
         btnDuration.setText(formatDuration(durationMinutes));
@@ -229,7 +230,7 @@ public class AddTaskDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    private void findFreeTimeSlot() {
+    private void findFreeTimeSlot(TextView tvFreeSlot) {
         if (existingTasks == null || selectedDate == null) return;
         List<Task> dayTasks = new java.util.ArrayList<>();
         for (Task t : existingTasks) {
@@ -241,37 +242,52 @@ public class AddTaskDialogFragment extends DialogFragment {
 
         int defaultDuration = 60;
         int dayEnd = 1440;
+        boolean found = false;
 
         if (dayTasks.isEmpty()) {
             startHour = 9; startMinute = 0;
             endHour = 10; endMinute = 0;
             durationMinutes = defaultDuration;
-            return;
+            found = true;
         }
 
-        int cursor = 0;
-        for (Task t : dayTasks) {
-            int tStart = timeToMinutes(t.getStartTime());
-            if (tStart - cursor >= defaultDuration) {
-                startHour = cursor / 60; startMinute = cursor % 60;
-                endHour = (cursor + defaultDuration) / 60; endMinute = (cursor + defaultDuration) % 60;
-                durationMinutes = defaultDuration;
-                return;
+        if (!found) {
+            int cursor = 0;
+            for (Task t : dayTasks) {
+                int tStart = timeToMinutes(t.getStartTime());
+                if (tStart - cursor >= defaultDuration) {
+                    startHour = cursor / 60; startMinute = cursor % 60;
+                    int total = cursor + defaultDuration;
+                    endHour = Math.min(total / 60, 23);
+                    endMinute = total > 1439 ? 59 : total % 60;
+                    durationMinutes = defaultDuration;
+                    found = true;
+                    break;
+                }
+                cursor = Math.max(cursor, timeToMinutes(t.getEndTime()));
             }
-            cursor = Math.max(cursor, timeToMinutes(t.getEndTime()));
+            if (!found && dayEnd - cursor >= defaultDuration) {
+                startHour = cursor / 60; startMinute = cursor % 60;
+                int total = cursor + defaultDuration;
+                endHour = Math.min(total / 60, 23);
+                endMinute = total > 1439 ? 59 : total % 60;
+                durationMinutes = defaultDuration;
+                found = true;
+            }
+            if (!found) {
+                int total = Math.max(cursor - defaultDuration, 0);
+                startHour = Math.min(total / 60, 22);
+                startMinute = 0;
+                endHour = startHour + 1;
+                endMinute = 0;
+                durationMinutes = defaultDuration;
+            }
         }
 
-        if (dayEnd - cursor >= defaultDuration) {
-            startHour = cursor / 60; startMinute = cursor % 60;
-            endHour = (cursor + defaultDuration) / 60; endMinute = (cursor + defaultDuration) % 60;
-            durationMinutes = defaultDuration;
-        } else {
-            startHour = Math.max(cursor - defaultDuration, 0) / 60;
-            startMinute = 0;
-            endHour = startHour + 1;
-            endMinute = 0;
-            durationMinutes = defaultDuration;
-        }
+        tvFreeSlot.setText("Свободно: " +
+                String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute) + " - " +
+                String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
+        tvFreeSlot.setVisibility(android.view.View.VISIBLE);
     }
 
     private void updateChipStyle(TextView chip, boolean selected) {
