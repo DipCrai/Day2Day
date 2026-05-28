@@ -52,6 +52,7 @@
     <string name="label_recurrence">Повторение</string>
     <string name="label_complexity">Сложность</string>
     <string name="btn_cancel">Отмена</string>
+    <string name="btn_save">Сохранить</string>
     <string name="btn_add">Добавить</string>
 
     <!-- Validation errors -->
@@ -75,7 +76,7 @@
     <!-- Duration items -->
     <string name="duration_30min">30 мин</string>
     <string name="duration_1h">1 час</string>
-    <string name="duration_1_5h">1.5 часа</string>
+    <string name="duration_1_5h">1,5 часа</string>
     <string name="duration_2h">2 часа</string>
     <string name="duration_3h">3 часа</string>
     <string name="duration_4h">4 часа</string>
@@ -85,8 +86,46 @@
     <string name="duration_hour">%1$d ч</string>
     <string name="duration_hour_min">%1$d ч %2$d мин</string>
 
+    <string name="settings_title">Настройки</string>
+    <string name="sleep_section">Сон</string>
+    <string name="theme_section">Тема</string>
+    <string name="theme_coming_soon">Скоро будет доступно</string>
+
+    <string name="sleep_title">Время сна</string>
+    <string name="sleep_start">Начало сна</string>
+    <string name="sleep_end">Конец сна</string>
+
+    <string name="sleep_error_equal">Время начала и конца не может совпадать</string>
+    <string name="sleep_error_short">Слишком короткий сон (меньше 1 часа)</string>
+    <string name="sleep_error_long">Слишком длинный сон (больше 12 часов)</string>
+
+    <string name="error_no_free_slot">Нет свободного времени на этой неделе</string>
+    <string name="free_slot">Свободно: %1$s — %2$s</string>
+    <string name="free_slot_week">Свободно: %1$s %2$s — %3$s</string>
+    <string name="free_slots_title">Свободное время на неделе</string>
+
     <!-- Default values -->
     <string name="start_time_default">09:00</string>
     <string name="end_time_default">10:00</string>
     <string name="slider_default">5</string>
+
+    <!-- Day name arrays -->
+    <string-array name="day_names">
+        <item>Понедельник</item>
+        <item>Вторник</item>
+        <item>Среда</item>
+        <item>Четверг</item>
+        <item>Пятница</item>
+        <item>Суббота</item>
+        <item>Воскресенье</item>
+    </string-array>
+    <string-array name="day_names_short">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+        <item>Вс</item>
+    </string-array>
 </resources>
