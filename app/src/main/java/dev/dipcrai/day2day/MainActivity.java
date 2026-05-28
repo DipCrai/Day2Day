@@ -58,11 +58,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        prefs = getSharedPreferences("day2day", MODE_PRIVATE);
+        switch (prefs.getInt("theme_mode", 0)) {
+            case 1:
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            case 2:
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            default:
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                        androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-        prefs = getSharedPreferences("day2day", MODE_PRIVATE);
 
         taskRepository = new TaskRepository(AppDatabase.getInstance(this).taskDao());
         initViews();

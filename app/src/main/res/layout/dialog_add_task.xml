@@ -85,9 +85,9 @@
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <TextView
+            <EditText
                 android:id="@+id/btnStartTime"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="40dp"
                 android:text="@string/start_time_default"
                 android:textSize="14sp"
@@ -95,8 +95,7 @@
                 android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
-                android:clickable="true"
-                android:focusable="true" />
+                android:inputType="time" />
 
         </LinearLayout>
 
@@ -115,9 +114,9 @@
                 android:textSize="14sp"
                 android:textColor="@color/primary" />
 
-            <TextView
+            <EditText
                 android:id="@+id/btnEndTime"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="40dp"
                 android:text="@string/end_time_default"
                 android:textSize="14sp"
@@ -125,68 +124,100 @@
                 android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
-                android:clickable="true"
-                android:focusable="true" />
+                android:inputType="time" />
 
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_duration"
+            android:textSize="14sp"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="4dp" />
+
         <LinearLayout
+            android:id="@+id/layoutDuration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:layout_marginBottom="12dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_duration"
-                android:textSize="14sp"
-                android:textColor="@color/primary" />
-
-            <TextView
-                android:id="@+id/btnDuration"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="@string/duration_1h"
-                android:textSize="14sp"
-                android:textColor="@color/primary"
-                android:background="@drawable/button_muted"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true" />
+            <TextView android:id="@+id/pillDur30" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/duration_30min" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillDur1h" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/duration_1h" android:textSize="12sp"
+                android:background="@drawable/chip_selected" android:textColor="@color/primary_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillDur1_5h" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/duration_1_5h" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillDur2h" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/duration_2h" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillDur3h" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/duration_3h" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillDurCustom" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:gravity="center"
+                android:text="+" android:textSize="18sp" android:textStyle="bold"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
 
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_recurrence"
+            android:textSize="14sp"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="4dp" />
+
         <LinearLayout
+            android:id="@+id/layoutRecurrence"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:gravity="center"
+            android:layout_marginBottom="2dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_recurrence"
-                android:textSize="14sp"
-                android:textColor="@color/primary" />
-
-            <TextView
-                android:id="@+id/btnRecurrence"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="@string/recurrence_once"
-                android:textSize="14sp"
-                android:textColor="@color/primary"
-                android:background="@drawable/button_muted"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true" />
+            <TextView android:id="@+id/pillRecOnce" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/recurrence_once" android:textSize="12sp"
+                android:background="@drawable/chip_selected" android:textColor="@color/primary_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillRecDaily" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/recurrence_daily" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillRecWeekly" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/recurrence_weekly" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillRecWeekdays" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:layout_marginEnd="3dp" android:gravity="center"
+                android:text="@string/recurrence_weekdays" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
+            <TextView android:id="@+id/pillRecCustom" android:layout_width="0dp" android:layout_height="36dp"
+                android:layout_weight="1" android:gravity="center"
+                android:text="@string/recurrence_custom_days" android:textSize="12sp"
+                android:background="@drawable/chip_unselected" android:textColor="@color/muted_foreground"
+                android:clickable="true" android:focusable="true" />
 
         </LinearLayout>
 
@@ -364,7 +395,7 @@
                 android:layout_height="42dp"
                 android:text="@string/btn_add"
                 android:textSize="14sp"
-                android:textColor="@color/white"
+                android:textColor="@color/primary_foreground"
                 android:background="@drawable/button_black"
                 android:gravity="center"
                 android:paddingHorizontal="24dp"

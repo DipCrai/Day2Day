@@ -1,7 +1,6 @@
 package dev.dipcrai.day2day.ui;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -70,14 +69,7 @@ public class WeekViewRenderer {
         ((ViewGroup.MarginLayoutParams) card.getLayoutParams()).setMargins(0, 0, 0, (int) (12 * density));
         card.setCardElevation(2 * density);
         card.setRadius(12 * density);
-        card.setUseCompatPadding(true);
-        card.setCardBackgroundColor(Color.WHITE);
-
-        if (isToday) {
-            card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.primary_alpha_6));
-            card.setStrokeWidth((int) (2 * density));
-            card.setStrokeColor(ContextCompat.getColor(context, R.color.primary));
-        }
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
 
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -212,13 +204,13 @@ public class WeekViewRenderer {
         card.setUseCompatPadding(true);
         card.setContentPadding((int) (12 * density), (int) (10 * density),
                 (int) (12 * density), (int) (10 * density));
-        card.setCardBackgroundColor(Color.WHITE);
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
 
         GradientDrawable border = new GradientDrawable();
         border.setShape(GradientDrawable.RECTANGLE);
         border.setCornerRadius(8 * density);
-        border.setStroke((int) (3 * density), task.getColor());
-        border.setColor(Color.WHITE);
+        border.setStroke((int) (1.5f * density), task.getColor());
+        border.setColor(ContextCompat.getColor(context, R.color.card));
         card.setBackground(border);
 
         LinearLayout layout = new LinearLayout(context);

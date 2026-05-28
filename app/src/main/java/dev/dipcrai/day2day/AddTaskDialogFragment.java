@@ -1,7 +1,6 @@
 package dev.dipcrai.day2day;
 
 import android.app.Dialog;
-import android.app.TimePickerDialog;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.widget.EditText;
@@ -32,6 +31,15 @@ public class AddTaskDialogFragment extends DialogFragment {
     private static final int[] DAY_CHIP_IDS = {
             R.id.chipMon, R.id.chipTue, R.id.chipWed, R.id.chipThu,
             R.id.chipFri, R.id.chipSat, R.id.chipSun
+    };
+    private static final int[] DURATION_PILL_IDS = {
+            R.id.pillDur30, R.id.pillDur1h, R.id.pillDur1_5h,
+            R.id.pillDur2h, R.id.pillDur3h
+    };
+    private static final int[] DURATION_VALUES = {30, 60, 90, 120, 180};
+    private static final int[] RECURRENCE_PILL_IDS = {
+            R.id.pillRecOnce, R.id.pillRecDaily, R.id.pillRecWeekly,
+            R.id.pillRecWeekdays, R.id.pillRecCustom
     };
 
     private OnTaskCreatedListener listener;
@@ -80,11 +88,6 @@ public class AddTaskDialogFragment extends DialogFragment {
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
     }
 
-    private void syncDurationFromEndStart(TextView btnDuration) {
-        int diff = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
-        durationMinutes = Math.max(diff, 30);
-        btnDuration.setText(formatDuration(durationMinutes));
-    }
 
     @NonNull
     @Override
@@ -119,8 +122,6 @@ public class AddTaskDialogFragment extends DialogFragment {
         EditText etDescription = view.findViewById(R.id.etTaskDescription);
         TextView btnStartTime = view.findViewById(R.id.btnStartTime);
         TextView btnEndTime = view.findViewById(R.id.btnEndTime);
-        TextView btnDuration = view.findViewById(R.id.btnDuration);
-        TextView btnRecurrence = view.findViewById(R.id.btnRecurrence);
         LinearLayout layoutRecurrenceDays = view.findViewById(R.id.layoutRecurrenceDays);
         SeekBar sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
@@ -132,62 +133,54 @@ public class AddTaskDialogFragment extends DialogFragment {
 
         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
-        btnDuration.setText(formatDuration(durationMinutes));
 
-        btnStartTime.setOnClickListener(v -> {
-            TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
-                    (view1, hourOfDay, minute) -> {
-                        startHour = hourOfDay;
-                        startMinute = minute;
-                        btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
+        for (int i = 0; i < 5; i++) {
+            final int index = i;
+            TextView pill = view.findViewById(DURATION_PILL_IDS[i]);
+            pill.setOnClickListener(cv -> {
+                durationMinutes = DURATION_VALUES[index];
+                updateDurationPills(view);
+                clearTimeError(btnStartTime, tvTimeError);
+                syncEndFromStartDuration(btnEndTime);
+            });
+        }
+        updateDurationPills(view);
+
+        view.findViewById(R.id.pillDurCustom).setOnClickListener(cv -> {
+            android.view.View durView = getLayoutInflater().inflate(R.layout.dialog_duration_input, null);
+            android.widget.EditText etInput = durView.findViewById(R.id.etDurationInput);
+            etInput.setText(String.valueOf(durationMinutes));
+            android.app.AlertDialog.Builder durBuilder = new android.app.AlertDialog.Builder(requireContext());
+            durBuilder.setView(durView);
+            android.app.Dialog durDialog = durBuilder.create();
+            if (durDialog.getWindow() != null)
+                durDialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            durView.findViewById(R.id.btnCancel).setOnClickListener(v -> durDialog.dismiss());
+            durView.findViewById(R.id.btnSave).setOnClickListener(v -> {
+                try {
+                    int val = Integer.parseInt(etInput.getText().toString());
+                    if (val > 0) {
+                        durationMinutes = val;
+                        updateDurationPills(view);
                         clearTimeError(btnStartTime, tvTimeError);
                         syncEndFromStartDuration(btnEndTime);
-                    }, startHour, startMinute, true);
-            timePicker.show();
+                        durDialog.dismiss();
+                    }
+                } catch (NumberFormatException ignored) {}
+            });
+            durDialog.show();
         });
 
-        btnEndTime.setOnClickListener(v -> {
-            TimePickerDialog timePicker = new TimePickerDialog(requireContext(),
-                    (view1, hourOfDay, minute) -> {
-                        endHour = hourOfDay;
-                        endMinute = minute;
-                        btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute));
-                        clearTimeError(btnStartTime, tvTimeError);
-                        syncDurationFromEndStart(btnDuration);
-                    }, endHour, endMinute, true);
-            timePicker.show();
-        });
-
-        btnDuration.setOnClickListener(v -> {
-            String[] items = {
-                    getString(R.string.duration_30min), getString(R.string.duration_1h),
-                    getString(R.string.duration_1_5h), getString(R.string.duration_2h),
-                    getString(R.string.duration_3h), getString(R.string.duration_4h)
-            };
-            int[] values = {30, 60, 90, 120, 180, 240};
-            new AlertDialog.Builder(requireContext())
-                    .setTitle(getString(R.string.dialog_duration_title))
-                    .setItems(items, (dialog, which) -> {
-                        durationMinutes = values[which];
-                        btnDuration.setText(formatDuration(durationMinutes));
-                        clearTimeError(btnStartTime, tvTimeError);
-                        syncEndFromStartDuration(btnEndTime);
-                    })
-                    .show();
-        });
-
-        btnRecurrence.setText(recurrenceLabels[0]);
-        btnRecurrence.setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle(getString(R.string.dialog_recurrence_title))
-                    .setItems(recurrenceLabels, (dialog, which) -> {
-                        recurrenceType = RECURRENCE_VALUES[which];
-                        btnRecurrence.setText(recurrenceLabels[which]);
-                        layoutRecurrenceDays.setVisibility("custom_days".equals(recurrenceType)
-                                ? android.view.View.VISIBLE : android.view.View.GONE);
-                    })
-                    .show();
-        });
+        for (int i = 0; i < 5; i++) {
+            final int index = i;
+            TextView pill = view.findViewById(RECURRENCE_PILL_IDS[i]);
+            pill.setOnClickListener(cv -> {
+                recurrenceType = RECURRENCE_VALUES[index];
+                updateRecurrencePills(view);
+                layoutRecurrenceDays.setVisibility("custom_days".equals(recurrenceType)
+                        ? android.view.View.VISIBLE : android.view.View.GONE);
+            });
+        }
 
         for (int i = 0; i < 7; i++) {
             final int index = i;
@@ -210,7 +203,7 @@ public class AddTaskDialogFragment extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        btnFindTime.setOnClickListener(v -> findFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot));
+        btnFindTime.setOnClickListener(v -> findFreeSlot(btnStartTime, btnEndTime, tvFreeSlot));
 
         btnCancel.setOnClickListener(v -> dismiss());
 
@@ -230,6 +223,25 @@ public class AddTaskDialogFragment extends DialogFragment {
             }
             String description = etDescription.getText().toString().trim();
             int complexity = sliderComplexity.getProgress() + 1;
+
+            int[] startParsed = parseTimeInput(btnStartTime.getText().toString());
+            if (startParsed == null) {
+                showTimeError(btnStartTime, tvTimeError, getString(R.string.error_time_format));
+                return;
+            }
+            startHour = startParsed[0]; startMinute = startParsed[1];
+
+            int[] endParsed = parseTimeInput(btnEndTime.getText().toString());
+            if (endParsed == null) {
+                showTimeError(btnStartTime, tvTimeError, getString(R.string.error_time_format));
+                return;
+            }
+            endHour = endParsed[0]; endMinute = endParsed[1];
+
+            if (durationMinutes < 1) {
+                Toast.makeText(requireContext(), getString(R.string.error_duration_format), Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             int startMinutes = startHour * 60 + startMinute;
             int endMinutes = endHour * 60 + endMinute;
@@ -282,28 +294,28 @@ public class AddTaskDialogFragment extends DialogFragment {
     }
 
     private void findFreeSlot(TextView btnStartTime, TextView btnEndTime,
-                              TextView btnDuration, TextView tvFreeSlot) {
+                              TextView tvFreeSlot) {
         if (existingTasks == null) return;
-        if (findSlotOnDay(existingTasks, btnStartTime, btnEndTime, btnDuration, tvFreeSlot)) return;
-        findWeekFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+        if (findSlotOnDay(existingTasks, btnStartTime, btnEndTime, tvFreeSlot)) return;
+        findWeekFreeSlot(btnStartTime, btnEndTime, tvFreeSlot);
     }
 
     private boolean findSlotOnDay(List<Task> dayTasks, TextView btnStartTime,
-                                   TextView btnEndTime, TextView btnDuration, TextView tvFreeSlot) {
+                                   TextView btnEndTime, TextView tvFreeSlot) {
         if (sleepStart > sleepEnd) {
-            return findSlotInWindow(dayTasks, sleepEnd, sleepStart, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+            return findSlotInWindow(dayTasks, sleepEnd, sleepStart, btnStartTime, btnEndTime, tvFreeSlot);
         } else if (sleepStart < sleepEnd) {
-            if (findSlotInWindow(dayTasks, 0, sleepStart, btnStartTime, btnEndTime, btnDuration, tvFreeSlot))
+            if (findSlotInWindow(dayTasks, 0, sleepStart, btnStartTime, btnEndTime, tvFreeSlot))
                 return true;
-            return findSlotInWindow(dayTasks, sleepEnd, 1440, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+            return findSlotInWindow(dayTasks, sleepEnd, 1440, btnStartTime, btnEndTime, tvFreeSlot);
         } else {
-            return findSlotInWindow(dayTasks, 0, 1440, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+            return findSlotInWindow(dayTasks, 0, 1440, btnStartTime, btnEndTime, tvFreeSlot);
         }
     }
 
     private boolean findSlotInWindow(List<Task> tasks, int winStart, int winEnd,
                                       TextView btnStartTime, TextView btnEndTime,
-                                      TextView btnDuration, TextView tvFreeSlot) {
+                                      TextView tvFreeSlot) {
         int cursor = winStart;
         for (Task t : tasks) {
             int tStart = timeToMinutes(t.getStartTime());
@@ -312,28 +324,28 @@ public class AddTaskDialogFragment extends DialogFragment {
             tStart = Math.max(tStart, winStart);
             tEnd = Math.min(tEnd, winEnd);
             if (tStart - cursor >= durationMinutes) {
-                applySlot(cursor, winEnd, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+                applySlot(cursor, winEnd, btnStartTime, btnEndTime, tvFreeSlot);
                 return true;
             }
             cursor = Math.max(cursor, tEnd);
         }
         if (winEnd - cursor >= durationMinutes) {
-            applySlot(cursor, winEnd, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+            applySlot(cursor, winEnd, btnStartTime, btnEndTime, tvFreeSlot);
             return true;
         }
         return false;
     }
 
     private void applySlot(int cursor, int windowEnd, TextView btnStartTime, TextView btnEndTime,
-                           TextView btnDuration, TextView tvFreeSlot) {
+                           TextView tvFreeSlot) {
         startHour = cursor / 60; startMinute = cursor % 60;
         int total = Math.min(cursor + durationMinutes, windowEnd);
         endHour = total / 60; endMinute = total % 60;
-        applyFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+        applyFreeSlot(btnStartTime, btnEndTime, tvFreeSlot);
     }
 
     private void findWeekFreeSlot(TextView btnStartTime, TextView btnEndTime,
-                                  TextView btnDuration, TextView tvFreeSlot) {
+                                  TextView tvFreeSlot) {
         if (allTasks == null || selectedDate == null) {
             Toast.makeText(requireContext(), getString(R.string.error_no_free_slot), Toast.LENGTH_SHORT).show();
             return;
@@ -435,7 +447,7 @@ public class AddTaskDialogFragment extends DialogFragment {
                     startMinute = (int) sel[3];
                     endHour = (int) sel[4];
                     endMinute = (int) sel[5];
-                    applyFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+                    applyFreeSlot(btnStartTime, btnEndTime, tvFreeSlot);
                     int dayIdx = ((int) sel[0] + 5) % 7;
                     tvFreeSlot.setText(getString(R.string.free_slot_week,
                             dayNames[dayIdx],
@@ -446,19 +458,52 @@ public class AddTaskDialogFragment extends DialogFragment {
     }
 
     private void applyFreeSlot(TextView btnStartTime, TextView btnEndTime,
-                               TextView btnDuration, TextView tvFreeSlot) {
+                               TextView tvFreeSlot) {
         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
-        btnDuration.setText(formatDuration(durationMinutes));
         tvFreeSlot.setText(getString(R.string.free_slot, String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute),
                 String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute)));
         tvFreeSlot.setVisibility(android.view.View.VISIBLE);
     }
 
+    private void updateDurationPills(android.view.View root) {
+        boolean matched = false;
+        for (int i = 0; i < 5; i++) {
+            boolean selected = DURATION_VALUES[i] == durationMinutes;
+            if (selected) matched = true;
+            TextView pill = root.findViewById(DURATION_PILL_IDS[i]);
+            pill.setBackgroundResource(selected ? R.drawable.chip_selected : R.drawable.chip_unselected);
+            pill.setTextColor(ContextCompat.getColor(requireContext(),
+                    selected ? R.color.primary_foreground : R.color.muted_foreground));
+        }
+        boolean custom = !matched;
+        TextView customPill = root.findViewById(R.id.pillDurCustom);
+        customPill.setBackgroundResource(custom ? R.drawable.chip_selected : R.drawable.chip_unselected);
+        customPill.setTextColor(ContextCompat.getColor(requireContext(),
+                custom ? R.color.primary_foreground : R.color.muted_foreground));
+        if (custom) {
+            customPill.setText(String.valueOf(durationMinutes));
+            customPill.setTextSize(12);
+        } else {
+            customPill.setText("+");
+            customPill.setTextSize(18);
+        }
+    }
+
+    private void updateRecurrencePills(android.view.View root) {
+        for (int i = 0; i < 5; i++) {
+            TextView pill = root.findViewById(RECURRENCE_PILL_IDS[i]);
+            boolean selected = RECURRENCE_VALUES[i].equals(recurrenceType);
+            pill.setBackgroundResource(selected ? R.drawable.chip_selected : R.drawable.chip_unselected);
+            pill.setTextColor(ContextCompat.getColor(requireContext(),
+                    selected ? R.color.primary_foreground : R.color.muted_foreground));
+        }
+    }
+
     private void updateChipStyle(TextView chip, boolean selected) {
         chip.setBackgroundResource(selected ? R.drawable.chip_selected : R.drawable.chip_unselected);
         chip.setTextColor(selected ?
-                ContextCompat.getColor(chip.getContext(), R.color.white) :
+                ContextCompat.getColor(chip.getContext(), R.color.primary_foreground) :
                 ContextCompat.getColor(chip.getContext(), R.color.muted_foreground));
     }
 
@@ -488,6 +533,26 @@ public class AddTaskDialogFragment extends DialogFragment {
     private void clearTimeError(TextView btnStartTime, TextView tvTimeError) {
         tvTimeError.setVisibility(android.view.View.GONE);
         btnStartTime.setBackgroundTintList(null);
+    }
+
+    private int[] parseTimeInput(String input) {
+        input = input.trim();
+        if (input.isEmpty()) return null;
+        try {
+            if (input.contains(":")) {
+                String[] parts = input.split(":");
+                int h = Integer.parseInt(parts[0]);
+                int m = Integer.parseInt(parts[1]);
+                if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+                return new int[]{h, m};
+            } else {
+                int h = Integer.parseInt(input);
+                if (h < 0 || h > 23) return null;
+                return new int[]{h, 0};
+            }
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private String formatDuration(int minutes) {
