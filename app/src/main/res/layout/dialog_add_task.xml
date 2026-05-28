@@ -91,8 +91,8 @@
                 android:layout_height="40dp"
                 android:text="@string/start_time_default"
                 android:textSize="14sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_black"
+                android:textColor="@color/primary"
+                android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
                 android:clickable="true"
@@ -121,8 +121,8 @@
                 android:layout_height="40dp"
                 android:text="@string/end_time_default"
                 android:textSize="14sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_black"
+                android:textColor="@color/primary"
+                android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
                 android:clickable="true"
@@ -151,8 +151,8 @@
                 android:layout_height="40dp"
                 android:text="@string/duration_1h"
                 android:textSize="14sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_black"
+                android:textColor="@color/primary"
+                android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
                 android:clickable="true"
@@ -181,8 +181,8 @@
                 android:layout_height="40dp"
                 android:text="@string/recurrence_once"
                 android:textSize="14sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_black"
+                android:textColor="@color/primary"
+                android:background="@drawable/button_muted"
                 android:paddingHorizontal="16dp"
                 android:gravity="center"
                 android:clickable="true"
@@ -327,12 +327,17 @@
 
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
+        <TextView
             android:id="@+id/btnFindTime"
-            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:text="Найти время"
+            android:textSize="14sp"
+            android:textColor="@color/primary"
+            android:background="@drawable/button_muted"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_marginBottom="16dp" />
 
         <LinearLayout

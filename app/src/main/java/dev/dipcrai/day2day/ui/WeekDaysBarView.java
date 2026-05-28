@@ -1,13 +1,13 @@
 package dev.dipcrai.day2day.ui;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import dev.dipcrai.day2day.R;
@@ -18,9 +18,14 @@ public class WeekDaysBarView {
     private final Context context;
     private final String[] dayNames;
 
-    public WeekDaysBarView(Context context, String[] dayNames) {
+    public WeekDaysBarView(Context context) {
         this.context = context;
-        this.dayNames = dayNames;
+        this.dayNames = new String[] {
+                context.getString(R.string.day_mon), context.getString(R.string.day_tue),
+                context.getString(R.string.day_wed), context.getString(R.string.day_thu),
+                context.getString(R.string.day_fri), context.getString(R.string.day_sat),
+                context.getString(R.string.day_sun)
+        };
     }
 
     public void render(LinearLayout container, Calendar selectedDate,
@@ -34,7 +39,7 @@ public class WeekDaysBarView {
             Calendar day = (Calendar) monday.clone();
             day.add(Calendar.DAY_OF_MONTH, i);
 
-            View dayView = View.inflate(context, R.layout.item_week_day, container);
+            View dayView = LayoutInflater.from(context).inflate(R.layout.item_week_day, container, false);
             TextView dayName = dayView.findViewById(R.id.dayName);
             TextView dayNumber = dayView.findViewById(R.id.dayNumber);
 

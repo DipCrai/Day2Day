@@ -15,9 +15,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import dev.dipcrai.day2day.util.TaskDateUtils;
 
 public class AddTaskDialogFragment extends DialogFragment {
 
@@ -34,6 +37,9 @@ public class AddTaskDialogFragment extends DialogFragment {
     private OnTaskCreatedListener listener;
     private String selectedDate;
     private List<Task> existingTasks;
+    private List<Task> allTasks;
+    private final java.text.SimpleDateFormat dateFormat =
+            new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private String[] recurrenceLabels;
     private String[] dayLabels;
     private int[] colors;
@@ -44,6 +50,11 @@ public class AddTaskDialogFragment extends DialogFragment {
     private int durationMinutes = 60;
     private String recurrenceType = "once";
     private boolean[] selectedDays = new boolean[7];
+    private int sleepStart = 0;
+    private int sleepEnd = 480;
+
+    public void setSleepStart(int minutes) { this.sleepStart = minutes; }
+    public void setSleepEnd(int minutes) { this.sleepEnd = minutes; }
 
     public void setOnTaskCreatedListener(OnTaskCreatedListener listener) {
         this.listener = listener;
@@ -55,6 +66,10 @@ public class AddTaskDialogFragment extends DialogFragment {
 
     public void setExistingTasks(List<Task> tasks) {
         this.existingTasks = tasks;
+    }
+
+    public void setAllTasks(List<Task> tasks) {
+        this.allTasks = tasks;
     }
 
     private void syncEndFromStartDuration(TextView btnEndTime) {
@@ -110,17 +125,11 @@ public class AddTaskDialogFragment extends DialogFragment {
         SeekBar sliderComplexity = view.findViewById(R.id.sliderComplexity);
         TextView tvComplexityValue = view.findViewById(R.id.tvComplexityValue);
         TextView tvTimeError = view.findViewById(R.id.tvTimeError);
-<<<<<<< Updated upstream
         TextView tvFreeSlot = view.findViewById(R.id.tvFreeSlot);
-        Button btnFindTime = view.findViewById(R.id.btnFindTime);
-        Button btnCancel = view.findViewById(R.id.btnCancel);
-        Button btnSave = view.findViewById(R.id.btnSave);
-=======
+        TextView btnFindTime = view.findViewById(R.id.btnFindTime);
         TextView btnCancel = view.findViewById(R.id.btnCancel);
         TextView btnSave = view.findViewById(R.id.btnSave);
->>>>>>> Stashed changes
 
-        findFreeTimeSlot(tvFreeSlot);
         btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
         btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
         btnDuration.setText(formatDuration(durationMinutes));
@@ -156,7 +165,7 @@ public class AddTaskDialogFragment extends DialogFragment {
                     getString(R.string.duration_3h), getString(R.string.duration_4h)
             };
             int[] values = {30, 60, 90, 120, 180, 240};
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            new AlertDialog.Builder(requireContext())
                     .setTitle(getString(R.string.dialog_duration_title))
                     .setItems(items, (dialog, which) -> {
                         durationMinutes = values[which];
@@ -169,7 +178,7 @@ public class AddTaskDialogFragment extends DialogFragment {
 
         btnRecurrence.setText(recurrenceLabels[0]);
         btnRecurrence.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            new AlertDialog.Builder(requireContext())
                     .setTitle(getString(R.string.dialog_recurrence_title))
                     .setItems(recurrenceLabels, (dialog, which) -> {
                         recurrenceType = RECURRENCE_VALUES[which];
@@ -201,10 +210,7 @@ public class AddTaskDialogFragment extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        btnFindTime.setOnClickListener(v -> {
-            int taskComplexity = (int) sliderComplexity.getValue();
-            findWeekFreeTime(taskComplexity, durationMinutes, tvFreeSlot, btnStartTime, btnEndTime, btnDuration);
-        });
+        btnFindTime.setOnClickListener(v -> findFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot));
 
         btnCancel.setOnClickListener(v -> dismiss());
 
@@ -247,7 +253,7 @@ public class AddTaskDialogFragment extends DialogFragment {
 
             int color = colors[new Random().nextInt(colors.length)];
             String id = String.valueOf(System.currentTimeMillis());
-            String date = selectedDate != null ? selectedDate : new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
+            String date = selectedDate != null ? selectedDate : dateFormat.format(new java.util.Date());
 
             Task task = new Task(id, title, description, date, startTime, endTime, color, complexity);
             task.setRecurrenceType(recurrenceType);
@@ -275,233 +281,178 @@ public class AddTaskDialogFragment extends DialogFragment {
         return dialog;
     }
 
-    private void findFreeTimeSlot(TextView tvFreeSlot) {
-        if (existingTasks == null || selectedDate == null) return;
-        List<Task> dayTasks = new java.util.ArrayList<>();
-        for (Task t : existingTasks) {
-            if (selectedDate.equals(t.getDate()) && "once".equals(t.getRecurrenceType())) {
-                dayTasks.add(t);
-            }
-        }
-        dayTasks.sort((a, b) -> Integer.compare(timeToMinutes(a.getStartTime()), timeToMinutes(b.getStartTime())));
-
-        int defaultDuration = 60;
-        int dayEnd = 1440;
-        boolean found = false;
-
-        if (dayTasks.isEmpty()) {
-            startHour = 9; startMinute = 0;
-            endHour = 10; endMinute = 0;
-            durationMinutes = defaultDuration;
-            found = true;
-        }
-
-        if (!found) {
-            int cursor = 0;
-            for (Task t : dayTasks) {
-                int tStart = timeToMinutes(t.getStartTime());
-                if (tStart - cursor >= defaultDuration) {
-                    startHour = cursor / 60; startMinute = cursor % 60;
-                    int total = cursor + defaultDuration;
-                    endHour = Math.min(total / 60, 23);
-                    endMinute = total > 1439 ? 59 : total % 60;
-                    durationMinutes = defaultDuration;
-                    found = true;
-                    break;
-                }
-                cursor = Math.max(cursor, timeToMinutes(t.getEndTime()));
-            }
-            if (!found && dayEnd - cursor >= defaultDuration) {
-                startHour = cursor / 60; startMinute = cursor % 60;
-                int total = cursor + defaultDuration;
-                endHour = Math.min(total / 60, 23);
-                endMinute = total > 1439 ? 59 : total % 60;
-                durationMinutes = defaultDuration;
-                found = true;
-            }
-            if (!found) {
-                int total = Math.max(cursor - defaultDuration, 0);
-                startHour = Math.min(total / 60, 22);
-                startMinute = 0;
-                endHour = startHour + 1;
-                endMinute = 0;
-                durationMinutes = defaultDuration;
-            }
-        }
-
-        tvFreeSlot.setText("Свободно: " +
-                String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute) + " - " +
-                String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
-        tvFreeSlot.setVisibility(android.view.View.VISIBLE);
+    private void findFreeSlot(TextView btnStartTime, TextView btnEndTime,
+                              TextView btnDuration, TextView tvFreeSlot) {
+        if (existingTasks == null) return;
+        if (findSlotOnDay(existingTasks, btnStartTime, btnEndTime, btnDuration, tvFreeSlot)) return;
+        findWeekFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
     }
 
-    private void findWeekFreeTime(int taskComplexity, int taskDuration, TextView tvFreeSlot,
-                                  Button btnStartTime, Button btnEndTime, Button btnDuration) {
-        if (existingTasks == null || selectedDate == null) {
-            Toast.makeText(requireContext(), "Данные не загружены", Toast.LENGTH_SHORT).show();
-            return;
+    private boolean findSlotOnDay(List<Task> dayTasks, TextView btnStartTime,
+                                   TextView btnEndTime, TextView btnDuration, TextView tvFreeSlot) {
+        if (sleepStart > sleepEnd) {
+            return findSlotInWindow(dayTasks, sleepEnd, sleepStart, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+        } else if (sleepStart < sleepEnd) {
+            if (findSlotInWindow(dayTasks, 0, sleepStart, btnStartTime, btnEndTime, btnDuration, tvFreeSlot))
+                return true;
+            return findSlotInWindow(dayTasks, sleepEnd, 1440, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+        } else {
+            return findSlotInWindow(dayTasks, 0, 1440, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
         }
-        String[] dateParts = selectedDate.split("-");
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.set(Integer.parseInt(dateParts[0]), Integer.parseInt(dateParts[1]) - 1, Integer.parseInt(dateParts[2]));
-
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        java.text.SimpleDateFormat dayFormat = new java.text.SimpleDateFormat("EEEE", Locale.forLanguageTag("ru"));
-
-        List<Object[]> suggestions = new java.util.ArrayList<>();
-        int dayEnd = 1440;
-
-        for (int offset = 0; offset < 7; offset++) {
-            java.util.Calendar dayCal = (java.util.Calendar) cal.clone();
-            dayCal.add(java.util.Calendar.DAY_OF_MONTH, offset);
-            String dayStr = sdf.format(dayCal.getTime());
-
-            List<Task> dayTasks = getDayTasks(dayCal, dayStr);
-            dayTasks.sort((a, b) -> Integer.compare(timeToMinutes(a.getStartTime()), timeToMinutes(b.getStartTime())));
-
-            double dayMedian = medianComplexity(dayTasks);
-            int cursor = 0;
-            for (Task t : dayTasks) {
-                cursor = Math.max(cursor, timeToMinutes(t.getEndTime()));
-            }
-
-            cursor = 0;
-            for (Task t : dayTasks) {
-                int tStart = timeToMinutes(t.getStartTime());
-                if (tStart - cursor >= taskDuration) {
-                    int total = cursor + taskDuration;
-                    if (total <= dayEnd) {
-                        suggestions.add(new Object[]{dayStr, dayCal.getTime(), cursor / 60, cursor % 60,
-                                Math.min(total / 60, 23), total > 1439 ? 59 : total % 60, dayMedian, taskDuration});
-                    }
-                    cursor = tStart;
-                }
-                cursor = Math.max(cursor, timeToMinutes(t.getEndTime()));
-            }
-            if (dayEnd - cursor >= taskDuration) {
-                int total = cursor + taskDuration;
-                suggestions.add(new Object[]{dayStr, dayCal.getTime(), cursor / 60, cursor % 60,
-                        Math.min(total / 60, 23), total > 1439 ? 59 : total % 60, dayMedian, taskDuration});
-            }
-        }
-
-        if (suggestions.isEmpty()) {
-            Toast.makeText(requireContext(), "Нет свободных окон на неделе", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        suggestions.sort((a, b) -> {
-            double diffA = Math.abs((Double) a[6] - taskComplexity);
-            double diffB = Math.abs((Double) b[6] - taskComplexity);
-            int cmp = Double.compare(diffA, diffB);
-            if (cmp != 0) return cmp;
-            int tasksA = getDayTasksForDate((String) a[0]).size();
-            int tasksB = getDayTasksForDate((String) b[0]).size();
-            return Integer.compare(tasksA, tasksB);
-        });
-
-        String[] items = new String[Math.min(suggestions.size(), 10)];
-        for (int i = 0; i < items.length; i++) {
-            Object[] s = suggestions.get(i);
-            String dayName = dayFormat.format((java.util.Date) s[1]);
-            String start = String.format(Locale.getDefault(), "%02d:%02d", s[2], s[3]);
-            String end = String.format(Locale.getDefault(), "%02d:%02d", s[4], s[5]);
-            int dc = (int) Math.round((Double) s[6]);
-            items[i] = dayName + " " + start + "-" + end + " (сложн. " + dc + ")";
-        }
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Свободное время")
-                .setItems(items, (dialog, which) -> {
-                    Object[] sel = suggestions.get(which);
-                    selectedDate = (String) sel[0];
-                    startHour = (int) sel[2];
-                    startMinute = (int) sel[3];
-                    endHour = (int) sel[4];
-                    endMinute = (int) sel[5];
-                    durationMinutes = (int) sel[7];
-                    btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
-                    btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
-                    btnDuration.setText(formatDuration(durationMinutes));
-                    tvFreeSlot.setText("Свободно: " + (String) sel[0] + " " +
-                            String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute) + "-" +
-                            String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
-                    tvFreeSlot.setVisibility(android.view.View.VISIBLE);
-                })
-                .setNegativeButton("Отмена", null)
-                .show();
     }
 
-    private List<Task> getDayTasks(java.util.Calendar dayCal, String dayStr) {
-        List<Task> result = new java.util.ArrayList<>();
-        for (Task t : existingTasks) {
-            if (isTaskOnDate(t, dayCal, dayStr)) {
-                result.add(t);
+    private boolean findSlotInWindow(List<Task> tasks, int winStart, int winEnd,
+                                      TextView btnStartTime, TextView btnEndTime,
+                                      TextView btnDuration, TextView tvFreeSlot) {
+        int cursor = winStart;
+        for (Task t : tasks) {
+            int tStart = timeToMinutes(t.getStartTime());
+            int tEnd = timeToMinutes(t.getEndTime());
+            if (tEnd <= winStart || tStart >= winEnd) continue;
+            tStart = Math.max(tStart, winStart);
+            tEnd = Math.min(tEnd, winEnd);
+            if (tStart - cursor >= durationMinutes) {
+                applySlot(cursor, winEnd, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+                return true;
             }
+            cursor = Math.max(cursor, tEnd);
         }
-        return result;
-    }
-
-    private List<Task> getDayTasksForDate(String dateStr) {
-        String[] parts = dateStr.split("-");
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        cal.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]) - 1, Integer.parseInt(parts[2]));
-        return getDayTasks(cal, dateStr);
-    }
-
-    private boolean isTaskOnDate(Task task, java.util.Calendar dateCal, String dateStr) {
-        String taskDate = task.getDate();
-        if (taskDate == null) return false;
-        String type = task.getRecurrenceType();
-        if (type == null) type = "once";
-
-        if ("once".equals(type)) {
-            return taskDate.equals(dateStr);
-        }
-        String excluded = task.getExcludedDates();
-        if (excluded != null && !excluded.isEmpty()) {
-            for (String d : excluded.split(",")) {
-                if (d.trim().equals(dateStr)) return false;
-            }
-        }
-        String[] tp = taskDate.split("-");
-        java.util.Calendar startCal = java.util.Calendar.getInstance();
-        startCal.set(Integer.parseInt(tp[0]), Integer.parseInt(tp[1]) - 1, Integer.parseInt(tp[2]));
-        if (dateCal.before(startCal) && !dateStr.equals(taskDate)) return false;
-
-        String endDateStr = task.getRecurrenceEndDate();
-        if (endDateStr != null) {
-            String[] ep = endDateStr.split("-");
-            java.util.Calendar endCal = java.util.Calendar.getInstance();
-            endCal.set(Integer.parseInt(ep[0]), Integer.parseInt(ep[1]) - 1, Integer.parseInt(ep[2]));
-            if (dateCal.after(endCal)) return false;
-        }
-
-        switch (type) {
-            case "daily": return true;
-            case "weekly": return dateCal.get(java.util.Calendar.DAY_OF_WEEK) == startCal.get(java.util.Calendar.DAY_OF_WEEK);
-            case "weekdays": return dateCal.get(java.util.Calendar.DAY_OF_WEEK) >= java.util.Calendar.MONDAY
-                    && dateCal.get(java.util.Calendar.DAY_OF_WEEK) <= java.util.Calendar.FRIDAY;
-            case "custom_days":
-                String daysStr = task.getRecurrenceDays();
-                if (daysStr == null || daysStr.isEmpty()) return false;
-                int targetDow = dateCal.get(java.util.Calendar.DAY_OF_WEEK);
-                for (String d : daysStr.split(",")) {
-                    if (Integer.parseInt(d.trim()) == targetDow) return true;
-                }
-                return false;
+        if (winEnd - cursor >= durationMinutes) {
+            applySlot(cursor, winEnd, btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+            return true;
         }
         return false;
     }
 
-    private double medianComplexity(List<Task> tasks) {
-        if (tasks.isEmpty()) return 5.0;
-        List<Integer> comps = new java.util.ArrayList<>();
-        for (Task t : tasks) comps.add(t.getComplexity());
-        java.util.Collections.sort(comps);
-        int mid = comps.size() / 2;
-        if (comps.size() % 2 == 1) return comps.get(mid);
-        return (comps.get(mid - 1) + comps.get(mid)) / 2.0;
+    private void applySlot(int cursor, int windowEnd, TextView btnStartTime, TextView btnEndTime,
+                           TextView btnDuration, TextView tvFreeSlot) {
+        startHour = cursor / 60; startMinute = cursor % 60;
+        int total = Math.min(cursor + durationMinutes, windowEnd);
+        endHour = total / 60; endMinute = total % 60;
+        applyFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+    }
+
+    private void findWeekFreeSlot(TextView btnStartTime, TextView btnEndTime,
+                                  TextView btnDuration, TextView tvFreeSlot) {
+        if (allTasks == null || selectedDate == null) {
+            Toast.makeText(requireContext(), getString(R.string.error_no_free_slot), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String[] parts = selectedDate.split("-");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]) - 1, Integer.parseInt(parts[2]));
+        Calendar monday = TaskDateUtils.getMonday(cal);
+        String[] dayNames = getResources().getStringArray(R.array.day_names_short);
+
+        List<int[]> windows = new java.util.ArrayList<>();
+        if (sleepStart > sleepEnd) {
+            windows.add(new int[]{sleepEnd, sleepStart});
+        } else if (sleepStart < sleepEnd) {
+            windows.add(new int[]{0, sleepStart});
+            windows.add(new int[]{sleepEnd, 1440});
+        } else {
+            windows.add(new int[]{0, 1440});
+        }
+
+        List<Object[]> suggestions = new java.util.ArrayList<>();
+        int gap = durationMinutes;
+
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+
+        for (int offset = 0; offset < 7; offset++) {
+            Calendar dayCal = (Calendar) monday.clone();
+            dayCal.add(Calendar.DAY_OF_MONTH, offset);
+
+            if (dayCal.before(today)) continue;
+
+            List<Task> dayTasks = TaskDateUtils.getTasksForDay(allTasks, dayCal, dateFormat);
+            dayTasks.sort((a, b) -> Integer.compare(timeToMinutes(a.getStartTime()), timeToMinutes(b.getStartTime())));
+
+            for (int[] w : windows) {
+                int winStart = w[0], winEnd = w[1];
+                int cursor = winStart;
+                for (Task t : dayTasks) {
+                    int tStart = timeToMinutes(t.getStartTime());
+                    int tEnd = timeToMinutes(t.getEndTime());
+                    if (tEnd <= winStart || tStart >= winEnd) continue;
+                    tStart = Math.max(tStart, winStart);
+                    tEnd = Math.min(tEnd, winEnd);
+                    if (tStart - cursor >= gap) {
+                        int total = cursor + gap;
+                        suggestions.add(new Object[]{
+                                dayCal.get(Calendar.DAY_OF_WEEK), dayCal,
+                                cursor / 60, cursor % 60,
+                                total / 60, total % 60,
+                                dayTasks.size()
+                        });
+                        cursor = tStart;
+                    }
+                    cursor = Math.max(cursor, tEnd);
+                }
+                if (winEnd - cursor >= gap) {
+                    int total = cursor + gap;
+                    suggestions.add(new Object[]{
+                            dayCal.get(Calendar.DAY_OF_WEEK), dayCal,
+                            cursor / 60, cursor % 60,
+                            total / 60, total % 60,
+                            dayTasks.size()
+                    });
+                }
+            }
+        }
+
+        if (suggestions.isEmpty()) {
+            Toast.makeText(requireContext(), getString(R.string.error_no_free_slot), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        suggestions.sort((a, b) -> Integer.compare((int) a[6], (int) b[6]));
+
+        String[] items = new String[Math.min(suggestions.size(), 10)];
+        String[] dayFullNames = getResources().getStringArray(R.array.day_names);
+        for (int i = 0; i < items.length; i++) {
+            Object[] s = suggestions.get(i);
+            int dayIdx = ((int) s[0] + 5) % 7;
+            String dayName = dayFullNames[dayIdx];
+            int taskCount = (int) s[6];
+            items[i] = dayName + " " + String.format(Locale.getDefault(), "%02d:%02d", s[2], s[3])
+                    + "\u2013" + String.format(Locale.getDefault(), "%02d:%02d", s[4], s[5])
+                    + " (" + taskCount + " задач)";
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.free_slots_title))
+                .setItems(items, (dialog, which) -> {
+                    Object[] sel = suggestions.get(which);
+                    Calendar dayCal = (Calendar) sel[1];
+                    selectedDate = dateFormat.format(dayCal.getTime());
+                    existingTasks = TaskDateUtils.getTasksForDay(allTasks, dayCal, dateFormat);
+                    startHour = (int) sel[2];
+                    startMinute = (int) sel[3];
+                    endHour = (int) sel[4];
+                    endMinute = (int) sel[5];
+                    applyFreeSlot(btnStartTime, btnEndTime, btnDuration, tvFreeSlot);
+                    int dayIdx = ((int) sel[0] + 5) % 7;
+                    tvFreeSlot.setText(getString(R.string.free_slot_week,
+                            dayNames[dayIdx],
+                            String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute),
+                            String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute)));
+                })
+                .show();
+    }
+
+    private void applyFreeSlot(TextView btnStartTime, TextView btnEndTime,
+                               TextView btnDuration, TextView tvFreeSlot) {
+        btnStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute));
+        btnEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute));
+        btnDuration.setText(formatDuration(durationMinutes));
+        tvFreeSlot.setText(getString(R.string.free_slot, String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute),
+                String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute)));
+        tvFreeSlot.setVisibility(android.view.View.VISIBLE);
     }
 
     private void updateChipStyle(TextView chip, boolean selected) {
@@ -514,6 +465,7 @@ public class AddTaskDialogFragment extends DialogFragment {
     private boolean hasTimeOverlap(int startMinutes, int endMinutes) {
         if (existingTasks == null) return false;
         for (Task existing : existingTasks) {
+            if (selectedDate != null && !selectedDate.equals(existing.getDate())) continue;
             int exStart = timeToMinutes(existing.getStartTime());
             int exEnd = timeToMinutes(existing.getEndTime());
             if (startMinutes < exEnd && exStart < endMinutes) return true;
