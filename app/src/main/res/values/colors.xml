@@ -31,4 +31,14 @@
     <color name="today_fg">#FFFFFFFF</color>
     <color name="selected_bg">#FFE9EBEF</color>
     <color name="free_slot">#FFF3F3F5</color>
+
+    <color name="task_lime">#FF84CC16</color>
+
+    <color name="primary_alpha_6">#0A030213</color>
+    <color name="complexity_easy_alpha_20">#3322C55E</color>
+
+    <color name="ic_launcher_bg">#3DDC84</color>
+    <color name="ic_launcher_grid">#33FFFFFF</color>
+    <color name="ic_launcher_gradient_start">#44000000</color>
+    <color name="ic_launcher_gradient_end">#00000000</color>
 </resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#0F0F14</color>
+    <color name="primary">#E4E4E7</color>
+    <color name="primary_foreground">#0F0F14</color>
+    <color name="muted">#27272A</color>
+    <color name="muted_foreground">#A1A1AA</color>
+    <color name="accent">#27272A</color>
+    <color name="accent_foreground">#E4E4E7</color>
+    <color name="destructive">#EF4444</color>
+    <color name="border">#1AFFFFFF</color>
+    <color name="card">#1A1A1F</color>
+    <color name="card_foreground">#E4E4E7</color>
+
+    <color name="task_blue">#FF6B8FC4</color>
+    <color name="task_purple">#FF9480C4</color>
+    <color name="task_green">#FF5EA878</color>
+    <color name="task_amber">#FFB89848</color>
+    <color name="task_pink">#FFB87898</color>
+    <color name="task_cyan">#FF5098A8</color>
+
+    <color name="complexity_easy">#FF5EA878</color>
+    <color name="complexity_moderate">#FF6B8FC4</color>
+    <color name="complexity_busy">#FFB89848</color>
+    <color name="complexity_hard">#FFC89058</color>
+    <color name="complexity_extreme">#FFC87878</color>
+
+    <color name="today_bg">#E4E4E7</color>
+    <color name="today_fg">#0F0F14</color>
+    <color name="selected_bg">#27272A</color>
+    <color name="free_slot">#1A1A1F</color>
+
+    <color name="task_lime">#FF80A050</color>
+
+    <color name="primary_alpha_6">#0AE4E4E7</color>
+    <color name="complexity_easy_alpha_20">#335EA878</color>
+
+    <color name="ic_launcher_bg">#3DDC84</color>
+    <color name="ic_launcher_grid">#33FFFFFF</color>
+    <color name="ic_launcher_gradient_start">#44000000</color>
+    <color name="ic_launcher_gradient_end">#00000000</color>
+</resources>
