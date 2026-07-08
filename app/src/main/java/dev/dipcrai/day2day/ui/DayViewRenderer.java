@@ -1,9 +1,9 @@
 package dev.dipcrai.day2day.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import dev.dipcrai.day2day.R;
 import dev.dipcrai.day2day.Task;
@@ -26,17 +27,19 @@ import dev.dipcrai.day2day.util.TaskDateUtils;
 public class DayViewRenderer {
 
     private static final int HOUR_HEIGHT_DP = 80;
-    private java.util.function.Consumer<Task> onTaskLongClick;
+    private Consumer<Task> onTaskLongClick;
 
     private final Context context;
+    private final float density;
     private final SimpleDateFormat dateFormat;
 
     public DayViewRenderer(Context context, SimpleDateFormat dateFormat) {
         this.context = context;
+        this.density = context.getResources().getDisplayMetrics().density;
         this.dateFormat = dateFormat;
     }
 
-    public void setOnTaskLongClickListener(java.util.function.Consumer<Task> listener) {
+    public void setOnTaskLongClickListener(Consumer<Task> listener) {
         this.onTaskLongClick = listener;
     }
 
@@ -45,7 +48,6 @@ public class DayViewRenderer {
         container.removeAllViews();
 
         Calendar now = Calendar.getInstance();
-        float density = context.getResources().getDisplayMetrics().density;
         int hourHeightPx = (int) (HOUR_HEIGHT_DP * density);
         int labelWidthPx = (int) (48 * density);
 
@@ -79,7 +81,7 @@ public class DayViewRenderer {
                         ViewGroup.LayoutParams.MATCH_PARENT, 1);
                 halfParams.topMargin = i * hourHeightPx + hourHeightPx / 2;
                 halfLine.setLayoutParams(halfParams);
-                halfLine.setBackgroundColor(0x1A000000);
+                halfLine.setBackgroundColor(ContextCompat.getColor(context, R.color.border));
                 timelineContainer.addView(halfLine);
             }
         }
@@ -131,14 +133,12 @@ public class DayViewRenderer {
     }
 
     private View createTaskCardView(Task task, int heightPx) {
-        float density = context.getResources().getDisplayMetrics().density;
-
         CardView card = new CardView(context);
         card.setCardElevation(2 * density);
         card.setRadius(8 * density);
         card.setContentPadding((int) (10 * density), (int) (8 * density),
                 (int) (10 * density), (int) (8 * density));
-        card.setCardBackgroundColor(android.graphics.Color.WHITE);
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
         card.setUseCompatPadding(true);
 
         LinearLayout layout = new LinearLayout(context);
@@ -159,7 +159,7 @@ public class DayViewRenderer {
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
         TextView complexityText = new TextView(context);
-        complexityText.setText("Сложность: " + task.getComplexity() + "/10");
+        complexityText.setText(context.getString(R.string.complexity_label, task.getComplexity()));
         complexityText.setTextSize(11);
         complexityText.setTextColor(ContextCompat.getColor(context, R.color.muted_foreground));
 
@@ -209,7 +209,7 @@ public class DayViewRenderer {
         GradientDrawable border = new GradientDrawable();
         border.setShape(GradientDrawable.RECTANGLE);
         border.setCornerRadius(8 * density);
-        border.setStroke((int) (3 * density), task.getColor());
+        border.setStroke((int) (1.5f * density), task.getColor());
 
         LayerDrawable layerDrawable = new LayerDrawable(new android.graphics.drawable.Drawable[]{
                 createBackgroundDrawable(task.getColor()),
@@ -223,7 +223,7 @@ public class DayViewRenderer {
     private GradientDrawable createBackgroundDrawable(int color) {
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.RECTANGLE);
-        bg.setCornerRadius(8 * context.getResources().getDisplayMetrics().density);
+        bg.setCornerRadius(8 * density);
         bg.setColor(TaskDateUtils.lightenColor(color));
         return bg;
     }

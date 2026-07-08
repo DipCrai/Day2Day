@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import dev.dipcrai.day2day.R;
 import dev.dipcrai.day2day.Task;
@@ -22,19 +23,26 @@ import dev.dipcrai.day2day.util.TaskDateUtils;
 
 public class WeekViewRenderer {
 
-    private java.util.function.Consumer<Task> onTaskLongClick;
+    private Consumer<Task> onTaskLongClick;
 
     private final Context context;
+    private final float density;
     private final String[] dayNames;
     private final SimpleDateFormat dateFormat;
 
-    public WeekViewRenderer(Context context, String[] dayNames, SimpleDateFormat dateFormat) {
+    public WeekViewRenderer(Context context, SimpleDateFormat dateFormat) {
         this.context = context;
-        this.dayNames = dayNames;
+        this.density = context.getResources().getDisplayMetrics().density;
         this.dateFormat = dateFormat;
+        this.dayNames = new String[] {
+                context.getString(R.string.day_mon), context.getString(R.string.day_tue),
+                context.getString(R.string.day_wed), context.getString(R.string.day_thu),
+                context.getString(R.string.day_fri), context.getString(R.string.day_sat),
+                context.getString(R.string.day_sun)
+        };
     }
 
-    public void setOnTaskLongClickListener(java.util.function.Consumer<Task> listener) {
+    public void setOnTaskLongClickListener(Consumer<Task> listener) {
         this.onTaskLongClick = listener;
     }
 
@@ -52,23 +60,16 @@ public class WeekViewRenderer {
     }
 
     private View createWeekDayCard(List<Task> allTasks, Calendar day, int dayIndex, Calendar today) {
-        float density = context.getResources().getDisplayMetrics().density;
         boolean isToday = TaskDateUtils.isSameDay(day, today);
 
-        com.google.android.material.card.MaterialCardView card = new com.google.android.material.card.MaterialCardView(context);
+        com.google.android.material.card.MaterialCardView card =
+                new com.google.android.material.card.MaterialCardView(context);
         card.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         ((ViewGroup.MarginLayoutParams) card.getLayoutParams()).setMargins(0, 0, 0, (int) (12 * density));
         card.setCardElevation(2 * density);
         card.setRadius(12 * density);
-        card.setUseCompatPadding(true);
-        card.setCardBackgroundColor(android.graphics.Color.WHITE);
-
-        if (isToday) {
-            card.setCardBackgroundColor(0x0A030213);
-            card.setStrokeWidth((int) (2 * density));
-            card.setStrokeColor(ContextCompat.getColor(context, R.color.primary));
-        }
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
 
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -91,7 +92,7 @@ public class WeekViewRenderer {
         dayNameText.setTextSize(12);
         dayNameText.setTextColor(ContextCompat.getColor(context, R.color.muted_foreground));
 
-        java.text.SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("MMMM", new Locale("ru"));
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", new Locale("ru"));
         TextView dateText = new TextView(context);
         dateText.setText(day.get(Calendar.DAY_OF_MONTH) + " " + monthFormat.format(day.getTime()));
         dateText.setTextSize(16);
@@ -104,7 +105,7 @@ public class WeekViewRenderer {
 
         if (isToday) {
             TextView todayBadge = new TextView(context);
-            todayBadge.setText("Сегодня");
+            todayBadge.setText(context.getString(R.string.today));
             todayBadge.setTextSize(11);
             todayBadge.setTextColor(ContextCompat.getColor(context, R.color.today_fg));
             todayBadge.setPadding((int) (8 * density), (int) (4 * density),
@@ -115,20 +116,20 @@ public class WeekViewRenderer {
 
         layout.addView(headerRow);
 
-        int dayComplexity = TaskDateUtils.calculateDayComplexity(allTasks, day, dateFormat);
+        int dayComplexity = TaskDateUtils.getAverageDayComplexity(allTasks, day, dateFormat);
         if (dayComplexity > 0) {
-            layout.addView(createMiniComplexityBadge(dayComplexity, density));
+            layout.addView(createMiniComplexityBadge(dayComplexity));
         }
 
         List<Task> dayTasks = TaskDateUtils.getTasksForDay(allTasks, day, dateFormat);
         if (!dayTasks.isEmpty()) {
-            layout.addView(createTasksDivider(density));
+            layout.addView(createTasksDivider());
             for (Task task : dayTasks) {
-                layout.addView(createMiniTaskCard(task, density));
+                layout.addView(createMiniTaskCard(task));
             }
         } else {
             TextView emptyText = new TextView(context);
-            emptyText.setText("Нет задач");
+            emptyText.setText(context.getString(R.string.no_tasks));
             emptyText.setTextSize(13);
             emptyText.setTextColor(ContextCompat.getColor(context, R.color.muted_foreground));
             emptyText.setGravity(Gravity.CENTER);
@@ -140,14 +141,19 @@ public class WeekViewRenderer {
         return card;
     }
 
-    private View createMiniComplexityBadge(int complexity, float density) {
+    private View createMiniComplexityBadge(int complexity) {
         int color;
         String label;
-        if (complexity <= 20) { color = 0xFF22C55E; label = "Легкий день"; }
-        else if (complexity <= 40) { color = 0xFF3B82F6; label = "Умеренный"; }
-        else if (complexity <= 60) { color = 0xFFEAB308; label = "Напряженный"; }
-        else if (complexity <= 80) { color = 0xFFF97316; label = "Сложный день"; }
-        else { color = 0xFFEF4444; label = "Очень сложный"; }
+        if (complexity <= 4) {
+            color = ContextCompat.getColor(context, R.color.complexity_easy);
+            label = context.getString(R.string.complexity_easy_day);
+        } else if (complexity <= 7) {
+            color = ContextCompat.getColor(context, R.color.complexity_busy);
+            label = context.getString(R.string.complexity_moderate_day);
+        } else {
+            color = ContextCompat.getColor(context, R.color.complexity_extreme);
+            label = context.getString(R.string.complexity_hard_day);
+        }
 
         LinearLayout badge = new LinearLayout(context);
         badge.setOrientation(LinearLayout.HORIZONTAL);
@@ -179,7 +185,7 @@ public class WeekViewRenderer {
         return badge;
     }
 
-    private View createTasksDivider(float density) {
+    private View createTasksDivider() {
         View divider = new View(context);
         divider.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 1));
@@ -188,7 +194,7 @@ public class WeekViewRenderer {
         return divider;
     }
 
-    private View createMiniTaskCard(Task task, float density) {
+    private View createMiniTaskCard(Task task) {
         CardView card = new CardView(context);
         card.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -198,13 +204,13 @@ public class WeekViewRenderer {
         card.setUseCompatPadding(true);
         card.setContentPadding((int) (12 * density), (int) (10 * density),
                 (int) (12 * density), (int) (10 * density));
-        card.setCardBackgroundColor(android.graphics.Color.WHITE);
+        card.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card));
 
         GradientDrawable border = new GradientDrawable();
         border.setShape(GradientDrawable.RECTANGLE);
         border.setCornerRadius(8 * density);
-        border.setStroke((int) (3 * density), task.getColor());
-        border.setColor(android.graphics.Color.WHITE);
+        border.setStroke((int) (1.5f * density), task.getColor());
+        border.setColor(ContextCompat.getColor(context, R.color.card));
         card.setBackground(border);
 
         LinearLayout layout = new LinearLayout(context);

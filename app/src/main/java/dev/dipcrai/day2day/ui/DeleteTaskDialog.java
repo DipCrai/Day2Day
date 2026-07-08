@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import dev.dipcrai.day2day.R;
 import dev.dipcrai.day2day.Task;
 import dev.dipcrai.day2day.data.repository.TaskRepository;
 import dev.dipcrai.day2day.util.TaskDateUtils;
@@ -26,22 +27,22 @@ public class DeleteTaskDialog {
 
         if (!isRecurring) {
             new MaterialAlertDialogBuilder(context)
-                    .setTitle("Удалить задачу")
-                    .setMessage("Удалить \"" + task.getTitle() + "\"?")
-                    .setPositiveButton("Удалить", (dialog, which) -> {
+                    .setTitle(context.getString(R.string.delete_task_title))
+                    .setMessage(context.getString(R.string.delete_task_message, task.getTitle()))
+                    .setPositiveButton(context.getString(R.string.delete_positive), (dialog, which) -> {
                         taskRepository.deleteById(task.getId(), result -> {});
                         allTasks.remove(task);
                         callback.onDeleted();
                     })
-                    .setNegativeButton("Отмена", null)
+                    .setNegativeButton(context.getString(R.string.delete_cancel), null)
                     .show();
             return;
         }
 
         new MaterialAlertDialogBuilder(context)
-                .setTitle("Удалить повторяющуюся задачу")
-                .setMessage("Удалить \"" + task.getTitle() + "\"?")
-                .setPositiveButton("Только это", (dialog, which) -> {
+                .setTitle(context.getString(R.string.delete_recurring_title))
+                .setMessage(context.getString(R.string.delete_task_message, task.getTitle()))
+                .setPositiveButton(context.getString(R.string.delete_this), (dialog, which) -> {
                     String today = TaskDateUtils.dateToString(selectedDate, dateFormat);
                     String excluded = task.getExcludedDates();
                     if (excluded == null || excluded.isEmpty()) {
@@ -52,12 +53,12 @@ public class DeleteTaskDialog {
                     taskRepository.update(task, result -> {});
                     callback.onDeleted();
                 })
-                .setNeutralButton("Все", (dialog, which) -> {
+                .setNeutralButton(context.getString(R.string.delete_all), (dialog, which) -> {
                     taskRepository.deleteById(task.getId(), result -> {});
                     allTasks.remove(task);
                     callback.onDeleted();
                 })
-                .setNegativeButton("Отмена", null)
+                .setNegativeButton(context.getString(R.string.delete_cancel), null)
                 .show();
     }
 }

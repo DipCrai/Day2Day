@@ -1,3 +1,139 @@
 <resources>
     <string name="app_name">Day2Day</string>
+
+    <!-- Day names -->
+    <string name="day_mon">Пн</string>
+    <string name="day_tue">Вт</string>
+    <string name="day_wed">Ср</string>
+    <string name="day_thu">Чт</string>
+    <string name="day_fri">Пт</string>
+    <string name="day_sat">Сб</string>
+    <string name="day_sun">Вс</string>
+
+    <!-- View toggle -->
+    <string name="title_planner">Планировщик</string>
+    <string name="view_day">День</string>
+    <string name="view_week">Неделя</string>
+
+    <!-- FAB -->
+    <string name="add_task_description">Добавить задачу</string>
+
+    <!-- Today badge -->
+    <string name="today">Сегодня</string>
+
+    <!-- Empty state -->
+    <string name="no_tasks">Нет задач</string>
+
+    <!-- Complexity labels -->
+    <string name="complexity_easy_day">Легкий день</string>
+    <string name="complexity_moderate_day">Умеренно загруженный</string>
+    <string name="complexity_hard_day">Сильно загруженный</string>
+    <string name="complexity_label">Сложность: %d/10</string>
+
+    <!-- Time range -->
+    <string name="time_range">%1$s - %2$s</string>
+
+    <!-- Delete dialogs -->
+    <string name="delete_task_title">Удалить задачу</string>
+    <string name="delete_task_message">Удалить \"%s\"?</string>
+    <string name="delete_positive">Удалить</string>
+    <string name="delete_cancel">Отмена</string>
+    <string name="delete_recurring_title">Удалить повторяющуюся задачу</string>
+    <string name="delete_this">Только это</string>
+    <string name="delete_all">Все</string>
+
+    <!-- Add Task Dialog -->
+    <string name="dialog_title_new_task">Новая задача</string>
+    <string name="hint_title">Название</string>
+    <string name="hint_description">Описание</string>
+    <string name="label_start_time">Время начала</string>
+    <string name="label_end_time">Время конца</string>
+    <string name="label_duration">Длительность</string>
+    <string name="label_recurrence">Повторение</string>
+    <string name="label_complexity">Сложность</string>
+    <string name="btn_cancel">Отмена</string>
+    <string name="btn_save">Сохранить</string>
+    <string name="btn_add">Добавить</string>
+
+    <!-- Validation errors -->
+    <string name="error_title_required">Введите название</string>
+    <string name="error_select_day">Выберите хотя бы один день</string>
+    <string name="error_end_before_start">Время конца должно быть позже начала</string>
+    <string name="error_past_midnight">Задача не может заканчиваться после 23:59</string>
+    <string name="error_time_format">Неверный формат времени (используй ЧЧ:ММ или ЧЧ)</string>
+    <string name="error_duration_format">Длительность — число минут (больше 0)</string>
+    <string name="error_time_overlap">На это время уже есть задача</string>
+
+    <!-- Recurrence labels -->
+    <string name="recurrence_once">Один раз</string>
+    <string name="recurrence_daily">Каждый день</string>
+    <string name="recurrence_weekly">Каждую неделю</string>
+    <string name="recurrence_weekdays">По будням</string>
+    <string name="recurrence_custom_days">По дням</string>
+
+    <!-- Dialog titles -->
+    <string name="dialog_duration_title">Длительность</string>
+    <string name="duration_input_hint">Введите количество минут</string>
+    <string name="dialog_recurrence_title">Повторение</string>
+
+    <!-- Duration items -->
+    <string name="duration_30min">30 мин</string>
+    <string name="duration_1h">1 час</string>
+    <string name="duration_1_5h">1,5 часа</string>
+    <string name="duration_2h">2 часа</string>
+    <string name="duration_3h">3 часа</string>
+    <string name="duration_4h">4 часа</string>
+
+    <!-- Duration format -->
+    <string name="duration_min">%1$d мин</string>
+    <string name="duration_hour">%1$d ч</string>
+    <string name="duration_hour_min">%1$d ч %2$d мин</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="sleep_section">Сон</string>
+    <string name="theme_section">Тема</string>
+    <string name="theme_coming_soon">Скоро будет доступно</string>
+    <string name="theme_label">Оформление</string>
+    <string name="theme_system">Системная</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_light">Светлая</string>
+
+    <string name="sleep_title">Время сна</string>
+    <string name="sleep_start">Начало сна</string>
+    <string name="sleep_end">Конец сна</string>
+
+    <string name="sleep_error_format">Неверный формат времени (используй ЧЧ:ММ)</string>
+    <string name="sleep_error_equal">Время начала и конца не может совпадать</string>
+    <string name="sleep_error_short">Слишком короткий сон (меньше 1 часа)</string>
+    <string name="sleep_error_long">Слишком длинный сон (больше 12 часов)</string>
+
+    <string name="error_no_free_slot">Нет свободного времени на этой неделе</string>
+    <string name="free_slot">Свободно: %1$s — %2$s</string>
+    <string name="free_slot_week">Свободно: %1$s %2$s — %3$s</string>
+    <string name="free_slots_title">Свободное время на неделе</string>
+
+    <!-- Default values -->
+    <string name="start_time_default">09:00</string>
+    <string name="end_time_default">10:00</string>
+    <string name="slider_default">5</string>
+
+    <!-- Day name arrays -->
+    <string-array name="day_names">
+        <item>Понедельник</item>
+        <item>Вторник</item>
+        <item>Среда</item>
+        <item>Четверг</item>
+        <item>Пятница</item>
+        <item>Суббота</item>
+        <item>Воскресенье</item>
+    </string-array>
+    <string-array name="day_names_short">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+        <item>Вс</item>
+    </string-array>
 </resources>

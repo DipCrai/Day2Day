@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/dialog_bg">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_duration_title"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        android:layout_marginBottom="20dp" />
+
+    <EditText
+        android:id="@+id/etDurationInput"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:hint="60"
+        android:textSize="16sp"
+        android:textColor="@color/primary"
+        android:textColorHint="@color/muted_foreground"
+        android:background="@drawable/edit_text_bg"
+        android:paddingHorizontal="14dp"
+        android:gravity="center"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/duration_input_hint"
+        android:textSize="13sp"
+        android:textColor="@color/muted_foreground"
+        android:layout_marginBottom="24dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:text="@string/btn_cancel"
+            android:textSize="14sp"
+            android:textColor="@color/muted_foreground"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:text="@string/btn_save"
+            android:textSize="14sp"
+            android:textColor="@color/primary_foreground"
+            android:background="@drawable/button_black"
+            android:gravity="center"
+            android:paddingHorizontal="24dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+</LinearLayout>
